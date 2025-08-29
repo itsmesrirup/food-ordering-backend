@@ -24,7 +24,7 @@ public class User implements UserDetails {
     private String email;
     private String password;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "restaurant_id", referencedColumnName = "id")
     private Restaurant restaurant;
 
