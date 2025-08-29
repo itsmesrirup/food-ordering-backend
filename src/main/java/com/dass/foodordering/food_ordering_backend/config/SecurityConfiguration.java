@@ -38,6 +38,7 @@ public class SecurityConfiguration {
                     .requestMatchers(HttpMethod.GET, "/api/restaurants/**").permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/customers/find-or-create").permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/orders").permitAll()
+                    .requestMatchers(HttpMethod.POST, "/api/restaurants").permitAll()
                     .anyRequest().authenticated()
                 )
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
