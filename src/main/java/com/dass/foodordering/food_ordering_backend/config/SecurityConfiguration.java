@@ -55,7 +55,12 @@ public class SecurityConfiguration {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
         // Add BOTH of your frontend ports here just in case.
-        config.setAllowedOrigins(Arrays.asList("http://localhost:5173", "http://localhost:5174", "http://localhost:5175"));
+        config.setAllowedOrigins(Arrays.asList(
+            "http://localhost:5173", //local admin
+                "https://food-ordering-admin-mvp.netlify.app", // live admin app
+                "http://localhost:5174", // local customer ordering app
+                "https://food-ordering-customer-mvp.netlify.app/", // live customer ordering app
+                "http://localhost:5175"));
         config.addAllowedHeader("*"); // Allow all headers
         config.addAllowedMethod("*");  // Allow all methods (GET, POST, etc.)
         source.registerCorsConfiguration("/**", config);
