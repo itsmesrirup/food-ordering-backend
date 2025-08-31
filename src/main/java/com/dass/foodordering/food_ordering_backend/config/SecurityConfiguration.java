@@ -38,6 +38,8 @@ public class SecurityConfiguration {
                     .requestMatchers(HttpMethod.GET, "/api/restaurants/**").permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/customers/find-or-create").permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/orders").permitAll()
+                    // ✅ ADDED THIS LINE: Allow anyone to create a new reservation request
+                    .requestMatchers(HttpMethod.POST, "/api/reservations").permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/restaurants").permitAll()
                     .anyRequest().authenticated()
                 )
