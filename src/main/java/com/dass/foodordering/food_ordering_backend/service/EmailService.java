@@ -40,6 +40,22 @@ public class EmailService {
         sendEmail(restaurantEmail, subject, body);
     }
 
+    public void sendOrderConfirmedNotification(Order order) {
+        // We get the customer's email from the order itself
+        String customerEmail = order.getCustomer().getEmail();
+        String subject = "Your order from " + order.getRestaurant().getName() + " is confirmed!";
+        String body = String.format(
+            "<h1>Your Order is Confirmed!</h1>" +
+            "<p>Hello,</p>" +
+            "<p>Your order #%d has been confirmed by the restaurant and is now being prepared.</p>" +
+            "<p>Total: $%.2f</p>" +
+            "<p>Thank you for your order!</p>",
+            order.getId(),
+            order.getTotalPrice()
+        );
+        sendEmail(customerEmail, subject, body);
+    }
+
     public void sendReservationConfirmedNotification(Reservation reservation) {
         String customerEmail = reservation.getCustomerEmail();
         String subject = "Your Reservation is Confirmed!";

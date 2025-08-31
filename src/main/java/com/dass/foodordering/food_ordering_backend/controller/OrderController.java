@@ -200,6 +200,10 @@ public class OrderController {
         order.setStatus(request.getStatus());
         
         Order updatedOrder = orderRepository.save(order);
+        // If the new status is CONFIRMED, send an email to the customer.
+        if (OrderStatus.CONFIRMED.equals(updatedOrder.getStatus())) {
+            emailService.sendOrderConfirmedNotification(updatedOrder);
+        }
         return new OrderResponse(updatedOrder);
     }
 
