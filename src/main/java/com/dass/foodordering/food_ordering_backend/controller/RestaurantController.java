@@ -6,11 +6,17 @@ import com.dass.foodordering.food_ordering_backend.dto.response.RestaurantRespon
 import com.dass.foodordering.food_ordering_backend.exception.ResourceNotFoundException;
 import com.dass.foodordering.food_ordering_backend.model.MenuItem;
 import com.dass.foodordering.food_ordering_backend.model.Restaurant;
+import com.dass.foodordering.food_ordering_backend.model.User;
 import com.dass.foodordering.food_ordering_backend.repository.MenuItemRepository;
 import com.dass.foodordering.food_ordering_backend.repository.RestaurantRepository;
+
+import lombok.Data;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -73,13 +79,34 @@ public class RestaurantController {
         return new MenuItemResponse(saved);
     }
 
+    @Data
+    public static class UpdateRestaurantRequest {
+        private String name;
+        private String address;
+        private String email;
+    }
+
     @PutMapping("/{id}")
-    public ResponseEntity<RestaurantResponse> updateRestaurant(@PathVariable Long id, @RequestBody Restaurant restaurantDetails) {
-        return restaurantRepository.findById(id).map(restaurant -> {
-            restaurant.setName(restaurantDetails.getName());
-            restaurant.setAddress(restaurantDetails.getAddress());
-            return ResponseEntity.ok(new RestaurantResponse(restaurantRepository.save(restaurant)));
-        }).orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<RestaurantResponse> updateRestaurant(
+            @PathVariable Long id, 
+            @RequestBody UpdateRestaurantRequest restaurantDetails) {
+        
+        // Security check: Make sure the logged-in user owns this restaurant
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
+        if (!currentUser.getRestaurant().getId().equals(id)) {
+            throw new ResourceNotFoundException("Restaurant not found"); // Or AccessDeniedException
+        }
+
+        Restaurant restaurant = restaurantRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
+        
+        restaurant.setName(restaurantDetails.getName());
+        restaurant.setAddress(restaurantDetails.getAddress());
+        restaurant.setEmail(restaurantDetails.getEmail()); // Set the email
+        
+        Restaurant updatedRestaurant = restaurantRepository.save(restaurant);
+        return ResponseEntity.ok(new RestaurantResponse(updatedRestaurant));
     }
 
     @DeleteMapping("/{id}")
