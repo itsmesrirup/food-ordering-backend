@@ -11,6 +11,7 @@ import com.dass.foodordering.food_ordering_backend.model.Order;
 import com.dass.foodordering.food_ordering_backend.model.OrderItem;
 import com.dass.foodordering.food_ordering_backend.model.OrderStatus;
 import com.dass.foodordering.food_ordering_backend.model.Restaurant;
+import com.dass.foodordering.food_ordering_backend.model.User;
 import com.dass.foodordering.food_ordering_backend.repository.CustomerRepository;
 import com.dass.foodordering.food_ordering_backend.repository.MenuItemRepository;
 import com.dass.foodordering.food_ordering_backend.repository.OrderRepository;
@@ -21,6 +22,9 @@ import com.dass.foodordering.food_ordering_backend.exception.BadRequestException
 import lombok.Data;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -131,8 +135,26 @@ public class OrderController {
     }*/
 
     @DeleteMapping("/{id}")
-    public void deleteOrder(@PathVariable Long id) {
-        orderRepository.deleteById(id);
+    public ResponseEntity<Void> deleteOrder(@PathVariable Long id) {
+        // Find the order first
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + id));
+
+        // Get the logged-in user
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
+        Long userRestaurantId = currentUser.getRestaurant().getId();
+
+        // SECURITY CHECK: Ensure the order belongs to the current user's restaurant
+        if (!order.getRestaurant().getId().equals(userRestaurantId)) {
+            // Throw an exception. We use ResourceNotFound to avoid revealing that the order exists.
+            throw new ResourceNotFoundException("Order not found with id: " + id);
+        }
+
+        orderRepository.delete(order);
+        
+        // Return a 204 No Content response, which is the standard for a successful DELETE
+        return ResponseEntity.noContent().build();
     }
 
     // ✅ Nested: Add MenuItem to an Order
