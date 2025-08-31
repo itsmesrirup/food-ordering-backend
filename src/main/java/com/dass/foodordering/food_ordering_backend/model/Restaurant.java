@@ -23,6 +23,7 @@ public class Restaurant {
     private String name;
     private String address;
     private boolean hasOwnUi = false; // Default to false
+    private String email; // The contact email for the restaurant
 
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore // Important to prevent infinite loops in JSON serialization

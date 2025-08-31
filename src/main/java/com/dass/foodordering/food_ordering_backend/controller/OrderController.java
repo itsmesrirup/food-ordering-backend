@@ -15,6 +15,7 @@ import com.dass.foodordering.food_ordering_backend.repository.CustomerRepository
 import com.dass.foodordering.food_ordering_backend.repository.MenuItemRepository;
 import com.dass.foodordering.food_ordering_backend.repository.OrderRepository;
 import com.dass.foodordering.food_ordering_backend.repository.RestaurantRepository;
+import com.dass.foodordering.food_ordering_backend.service.EmailService;
 import com.dass.foodordering.food_ordering_backend.exception.BadRequestException;
 
 import lombok.Data;
@@ -41,6 +42,9 @@ public class OrderController {
 
     @Autowired
     private RestaurantRepository restaurantRepository;
+
+    @Autowired
+    private EmailService emailService;
 
     @Data
     public static class UpdateStatusRequest {
@@ -110,6 +114,7 @@ public class OrderController {
         order.setTotalPrice(totalPrice);
 
         Order savedOrder = orderRepository.save(order);
+        emailService.sendNewOrderNotification(savedOrder);
         return new OrderResponse(savedOrder);
     }
 

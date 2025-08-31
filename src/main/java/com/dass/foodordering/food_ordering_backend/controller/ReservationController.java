@@ -9,6 +9,8 @@ import com.dass.foodordering.food_ordering_backend.model.Restaurant;
 import com.dass.foodordering.food_ordering_backend.model.User;
 import com.dass.foodordering.food_ordering_backend.repository.ReservationRepository;
 import com.dass.foodordering.food_ordering_backend.repository.RestaurantRepository;
+import com.dass.foodordering.food_ordering_backend.service.EmailService;
+
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +30,9 @@ public class ReservationController {
 
     @Autowired
     private RestaurantRepository restaurantRepository;
+
+    @Autowired
+    private EmailService emailService;
 
     // --- PUBLIC ENDPOINT ---
     // For customers to create a new reservation request.
@@ -86,6 +91,9 @@ public class ReservationController {
         
         reservation.setStatus(request.getStatus());
         Reservation updatedReservation = reservationRepository.save(reservation);
+        if (updatedReservation.getStatus() == ReservationStatus.CONFIRMED) {
+            emailService.sendReservationConfirmedNotification(updatedReservation);
+        }
         return ResponseEntity.ok(new ReservationResponse(updatedReservation));
     }
 }
