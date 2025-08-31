@@ -33,4 +33,5 @@ COPY --from=build /app/target/food-ordering-backend-0.0.1-SNAPSHOT.jar ./app.jar
 EXPOSE 8080
 
 # The command to run when the container starts
-ENTRYPOINT ["java", "-jar", "app.jar"]
+#ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-XX:MaxRAMPercentage=80.0", "-jar", "app.jar"]
