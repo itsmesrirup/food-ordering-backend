@@ -1,0 +1,3 @@
+ALTER TABLE restaurant
+ADD COLUMN reservations_enabled BOOLEAN NOT NULL DEFAULT FALSE,
+ADD COLUMN qr_code_ordering_enabled BOOLEAN NOT NULL DEFAULT FALSE;
