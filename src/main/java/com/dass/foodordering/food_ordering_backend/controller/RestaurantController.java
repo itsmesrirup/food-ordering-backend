@@ -4,6 +4,7 @@ import com.dass.foodordering.food_ordering_backend.dto.request.MenuItemRequest;
 import com.dass.foodordering.food_ordering_backend.dto.request.UpdateRestaurantRequest;
 import com.dass.foodordering.food_ordering_backend.dto.response.MenuItemResponse;
 import com.dass.foodordering.food_ordering_backend.dto.response.RestaurantResponse;
+import com.dass.foodordering.food_ordering_backend.dto.response.RestaurantSettingsResponse;
 import com.dass.foodordering.food_ordering_backend.exception.ResourceNotFoundException;
 import com.dass.foodordering.food_ordering_backend.model.MenuItem;
 import com.dass.foodordering.food_ordering_backend.model.Restaurant;
@@ -111,7 +112,7 @@ public class RestaurantController {
 
     // Endpoint for a logged-in owner to get their own restaurant's details
     @GetMapping("/me")
-    public ResponseEntity<RestaurantResponse> getMyRestaurant() {
+    public ResponseEntity<RestaurantSettingsResponse> getMyRestaurant() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
         Restaurant myRestaurant = currentUser.getRestaurant();
@@ -120,7 +121,7 @@ public class RestaurantController {
             throw new ResourceNotFoundException("No restaurant associated with this user.");
         }
         
-        return ResponseEntity.ok(new RestaurantResponse(myRestaurant));
+        return ResponseEntity.ok(new RestaurantSettingsResponse(myRestaurant));
     }
 
     @DeleteMapping("/{id}")

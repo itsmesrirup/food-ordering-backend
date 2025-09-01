@@ -102,6 +102,10 @@ public class OrderController {
         order.setOrderTime(LocalDateTime.now());
 
         if (request.getTableNumber() != null && !request.getTableNumber().isEmpty()) {
+            if (!restaurant.isQrCodeOrderingEnabled()) {
+                // The feature is disabled for this restaurant, so reject the order.
+                throw new BadRequestException("QR Code ordering is not enabled for this restaurant.");
+            }
             order.setTableNumber(request.getTableNumber());
         }
         
