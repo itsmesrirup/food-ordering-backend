@@ -96,9 +96,19 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-thymeleaf</artifactId>
 		</dependency>
+		<!-- 1. Flyway Core - We specify the latest version explicitly -->
 		<dependency>
 			<groupId>org.flywaydb</groupId>
 			<artifactId>flyway-core</artifactId>
+			<version>11.11.2</version> <!-- Use the latest available version -->
+		</dependency>
+
+		<!-- 2. Flyway PostgreSQL Support -->
+		<!-- This adds specific integrations for modern PostgreSQL features -->
+		<dependency>
+			<groupId>org.flywaydb</groupId>
+			<artifactId>flyway-database-postgresql</artifactId>
+			<version>11.11.2</version> <!-- Match the core version -->
 		</dependency>
 	</dependencies>
 
