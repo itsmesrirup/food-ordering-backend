@@ -20,9 +20,9 @@ public class FoodOrderingBackendApplication {
 		SpringApplication.run(FoodOrderingBackendApplication.class, args);
 	}
 
-	/*@PostConstruct
+	@PostConstruct
     public void testDb() {
         System.out.println("Restaurants in DB: " + restaurantRepository.findAll().size());
-    }*/
+    }
 
 }
