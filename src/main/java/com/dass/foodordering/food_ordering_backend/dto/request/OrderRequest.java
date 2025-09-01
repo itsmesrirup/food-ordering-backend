@@ -8,4 +8,5 @@ public class OrderRequest {
     private String customerName;
     private List<OrderItemRequest> items; // Changed from menuItemIds
     private Long customerId;
+    private String tableNumber;
 }

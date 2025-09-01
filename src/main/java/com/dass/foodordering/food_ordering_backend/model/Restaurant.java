@@ -25,6 +25,18 @@ public class Restaurant {
     private boolean hasOwnUi = false; // Default to false
     private String email; // The contact email for the restaurant
 
+    // --- FEATURE FLAGS ---
+    
+    @Column(nullable = false)
+    private boolean reservationsEnabled = false; // Default to OFF
+
+    @Column(nullable = false)
+    private boolean qrCodeOrderingEnabled = false; // Default to OFF
+    
+    // Example for a future feature
+    // @Column(nullable = false)
+    // private boolean loyaltyEnabled = false; 
+
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore // Important to prevent infinite loops in JSON serialization
     private List<User> users = new ArrayList<>();

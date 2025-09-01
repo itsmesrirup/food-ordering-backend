@@ -100,6 +100,10 @@ public class OrderController {
         order.setRestaurant(restaurant);
         order.setStatus(OrderStatus.PENDING);
         order.setOrderTime(LocalDateTime.now());
+
+        if (request.getTableNumber() != null && !request.getTableNumber().isEmpty()) {
+            order.setTableNumber(request.getTableNumber());
+        }
         
         // Create OrderItem objects and calculate total price
         double totalPrice = 0;

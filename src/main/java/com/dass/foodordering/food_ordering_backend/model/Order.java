@@ -65,6 +65,18 @@ public class Order {
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
 
+    //To store the table number for QR code orders.
+    private String tableNumber;
+
+    // --- getters/setters for tableNumber ---
+    public String getTableNumber() {
+        return tableNumber;
+    }
+
+    public void setTableNumber(String tableNumber) {
+        this.tableNumber = tableNumber;
+    }
+
     // --- helpers to keep both sides in sync ---
     //public void addMenuItem(MenuItem item) {
       //  menuItems.add(item);

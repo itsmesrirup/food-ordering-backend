@@ -1,6 +1,7 @@
 package com.dass.foodordering.food_ordering_backend.controller;
 
 import com.dass.foodordering.food_ordering_backend.dto.request.MenuItemRequest;
+import com.dass.foodordering.food_ordering_backend.dto.request.UpdateRestaurantRequest;
 import com.dass.foodordering.food_ordering_backend.dto.response.MenuItemResponse;
 import com.dass.foodordering.food_ordering_backend.dto.response.RestaurantResponse;
 import com.dass.foodordering.food_ordering_backend.exception.ResourceNotFoundException;
@@ -56,6 +57,8 @@ public class RestaurantController {
                 .collect(Collectors.toList());
     }
 
+    // --- PROTECTED ADMIN ENDPOINTS ---
+    
     @PostMapping
     public RestaurantResponse createRestaurant(@RequestBody Restaurant restaurant) {
         return new RestaurantResponse(restaurantRepository.save(restaurant));
@@ -79,13 +82,6 @@ public class RestaurantController {
         return new MenuItemResponse(saved);
     }
 
-    @Data
-    public static class UpdateRestaurantRequest {
-        private String name;
-        private String address;
-        private String email;
-    }
-
     @PutMapping("/{id}")
     public ResponseEntity<RestaurantResponse> updateRestaurant(
             @PathVariable Long id, 
@@ -95,18 +91,36 @@ public class RestaurantController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User currentUser = (User) authentication.getPrincipal();
         if (!currentUser.getRestaurant().getId().equals(id)) {
-            throw new ResourceNotFoundException("Restaurant not found"); // Or AccessDeniedException
+            throw new ResourceNotFoundException("Restaurant not found for this user"); // Or AccessDeniedException
         }
 
-        Restaurant restaurant = restaurantRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
+        Restaurant restaurantToUpdate = restaurantRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found with id: " + id));
         
-        restaurant.setName(restaurantDetails.getName());
-        restaurant.setAddress(restaurantDetails.getAddress());
-        restaurant.setEmail(restaurantDetails.getEmail()); // Set the email
+        restaurantToUpdate.setName(restaurantDetails.getName());
+        restaurantToUpdate.setAddress(restaurantDetails.getAddress());
+        restaurantToUpdate.setEmail(restaurantDetails.getEmail()); // Set the email
         
-        Restaurant updatedRestaurant = restaurantRepository.save(restaurant);
+        // Update feature flags
+        restaurantToUpdate.setReservationsEnabled(restaurantDetails.isReservationsEnabled());
+        restaurantToUpdate.setQrCodeOrderingEnabled(restaurantDetails.isQrCodeOrderingEnabled());
+        
+        Restaurant updatedRestaurant = restaurantRepository.save(restaurantToUpdate);
         return ResponseEntity.ok(new RestaurantResponse(updatedRestaurant));
+    }
+
+    // Endpoint for a logged-in owner to get their own restaurant's details
+    @GetMapping("/me")
+    public ResponseEntity<RestaurantResponse> getMyRestaurant() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
+        Restaurant myRestaurant = currentUser.getRestaurant();
+        
+        if (myRestaurant == null) {
+            throw new ResourceNotFoundException("No restaurant associated with this user.");
+        }
+        
+        return ResponseEntity.ok(new RestaurantResponse(myRestaurant));
     }
 
     @DeleteMapping("/{id}")

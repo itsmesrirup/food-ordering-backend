@@ -14,6 +14,7 @@ public class OrderResponse {
     //private List<MenuItemResponse> menuItems;
     private List<OrderItemResponse> items; // Changed from menuItems
     private double totalPrice;
+    private String tableNumber;
 
     public OrderResponse(Order order) {
         this.id = order.getId();
@@ -24,6 +25,7 @@ public class OrderResponse {
         this.items = order.getOrderItems().stream() // Use getOrderItems()
                 .map(OrderItemResponse::new)
                 .collect(Collectors.toList());
+        this.tableNumber = order.getTableNumber();
     }
 
     // Getters
@@ -34,4 +36,5 @@ public class OrderResponse {
     //public List<MenuItemResponse> getMenuItems() { return menuItems; }
     public List<OrderItemResponse> getItems() { return items; }
     public Double getTotalPrice() { return totalPrice; }
+    public String getTableNumber() { return tableNumber; }
 }
