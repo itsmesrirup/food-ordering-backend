@@ -142,6 +142,19 @@
 				<groupId>org.flywaydb</groupId>
 				<artifactId>flyway-maven-plugin</artifactId>
 				<version>11.11.2</version> <!-- Use the same version as your flyway-core dependency -->
+				<!-- This tells the plugin which libraries it needs to run -->
+				<dependencies>
+					<dependency>
+						<groupId>org.flywaydb</groupId>
+						<artifactId>flyway-database-postgresql</artifactId>
+						<version>11.11.2</version> <!-- Match your Flyway version -->
+					</dependency>
+					<dependency>
+						<groupId>org.postgresql</groupId>
+						<artifactId>postgresql</artifactId>
+						<version>42.7.3</version> <!-- A recent, stable version -->
+					</dependency>
+				</dependencies>
 			</plugin>
 		</plugins>
 	</build>
