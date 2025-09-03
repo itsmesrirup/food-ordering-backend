@@ -141,10 +141,9 @@
 				<artifactId>flyway-maven-plugin</artifactId>
 				<version>11.11.2</version> <!-- Use the same version as your flyway-core dependency -->
 				<configuration>
-					<!-- The plugin needs to know where to find the database credentials -->
-					<url>${spring.datasource.url}</url>
-					<user>${spring.datasource.username}</user>
-					<password>${spring.datasource.password}</password>
+					<url>${env.SPRING_DATASOURCE_URL}</url>
+					<user>${env.SPRING_DATASOURCE_USERNAME}</user>
+					<password>${env.SPRING_DATASOURCE_PASSWORD}</password>
 				</configuration>
 			</plugin>
 		</plugins>
