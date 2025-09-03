@@ -3,6 +3,7 @@ package com.dass.foodordering.food_ordering_backend.auth;
 import com.dass.foodordering.food_ordering_backend.config.JwtService;
 import com.dass.foodordering.food_ordering_backend.exception.ResourceNotFoundException;
 import com.dass.foodordering.food_ordering_backend.model.Restaurant;
+import com.dass.foodordering.food_ordering_backend.model.Role;
 import com.dass.foodordering.food_ordering_backend.model.User;
 import com.dass.foodordering.food_ordering_backend.repository.RestaurantRepository;
 import com.dass.foodordering.food_ordering_backend.repository.UserRepository;
@@ -30,6 +31,7 @@ public class AuthenticationService {
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .restaurant(restaurant)
+                .role(Role.ADMIN) // ✅ Automatically assign ADMIN role on registration
                 .build();
         userRepository.save(user);
         var jwtToken = jwtService.generateToken(user);

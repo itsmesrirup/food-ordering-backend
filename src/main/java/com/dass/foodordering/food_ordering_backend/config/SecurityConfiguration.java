@@ -32,16 +32,24 @@ public class SecurityConfiguration {
                 // Spring Security to use the configuration from our CorsConfigurationSource bean.
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
-                    .requestMatchers("/actuator/health").permitAll()
-                    .requestMatchers("/api/auth/**").permitAll()
-                    .requestMatchers(HttpMethod.GET, "/api/restaurants").permitAll()
-                    .requestMatchers(HttpMethod.GET, "/api/restaurants/**").permitAll()
-                    .requestMatchers(HttpMethod.POST, "/api/customers/find-or-create").permitAll()
-                    .requestMatchers(HttpMethod.POST, "/api/orders").permitAll()
-                    // ✅ ADDED THIS LINE: Allow anyone to create a new reservation request
-                    .requestMatchers(HttpMethod.POST, "/api/reservations").permitAll()
-                    .requestMatchers(HttpMethod.POST, "/api/restaurants").permitAll()
-                    .anyRequest().authenticated()
+                    // Public endpoints
+                .requestMatchers("/actuator/health", "/api/auth/**").permitAll() 
+                .requestMatchers(HttpMethod.GET, "/api/restaurants", "/api/restaurants/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/customers/find-or-create", "/api/orders", "/api/reservations").permitAll()
+
+                // ADMIN endpoints (for restaurant owners)
+                .requestMatchers(HttpMethod.PUT, "/api/restaurants/{id}").hasAuthority("ADMIN")
+                .requestMatchers("/api/reservations/by-restaurant", "/api/reservations/{id}/status").hasAuthority("ADMIN")
+                .requestMatchers("/api/menu-items/**").hasAuthority("ADMIN")
+                .requestMatchers("/api/orders/{id}/**").hasAuthority("ADMIN") // For status updates, etc.
+                .requestMatchers("/api/users/me").hasAuthority("ADMIN") // Getting their own profile
+
+                // SUPER_ADMIN endpoints (for you)
+                .requestMatchers(HttpMethod.POST, "/api/restaurants").hasAuthority("SUPER_ADMIN")
+                // We would add more super admin routes here, e.g., GET /api/users, GET /api/restaurants/all-admin-list
+                
+                // Default deny
+                .anyRequest().authenticated()
                 )
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider)

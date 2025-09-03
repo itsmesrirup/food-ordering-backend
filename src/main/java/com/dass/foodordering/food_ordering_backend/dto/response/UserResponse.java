@@ -9,6 +9,7 @@ public class UserResponse {
     private String email;
     private Long restaurantId;
     private String restaurantName;
+    private String role;
 
     public UserResponse(User user) {
         this.id = user.getId();
@@ -17,5 +18,6 @@ public class UserResponse {
             this.restaurantId = user.getRestaurant().getId();
             this.restaurantName = user.getRestaurant().getName();
         }
+        this.role = user.getRole().name();
     }
 }

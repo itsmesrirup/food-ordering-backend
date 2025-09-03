@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
@@ -28,10 +29,14 @@ public class User implements UserDetails {
     @JoinColumn(name = "restaurant_id", referencedColumnName = "id")
     private Restaurant restaurant;
 
+    @Enumerated(EnumType.STRING) // Store the role as a string (e.g., "ADMIN")
+    private Role role;
+
     // --- UserDetails Methods ---
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(); // Simplified: no roles for now
+        // This is crucial for Spring Security to know the user's role
+        return List.of(new SimpleGrantedAuthority(role.name()));
     }
 
     @Override
