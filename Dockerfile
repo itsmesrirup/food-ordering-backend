@@ -29,9 +29,14 @@ WORKDIR /app
 # Copy the JAR file from the 'build' stage into the final image
 COPY --from=build /app/target/food-ordering-backend-0.0.1-SNAPSHOT.jar ./app.jar
 
+# Copy the startup script into the container
+COPY startup.sh .
+
+# Make sure the script is executable inside the container
+RUN chmod +x startup.sh
+
 # Expose the port the application will run on
 EXPOSE 8080
 
-# The command to run when the container starts
-#ENTRYPOINT ["java", "-jar", "app.jar"]
-ENTRYPOINT ["java", "-XX:MaxRAMPercentage=80.0", "-jar", "app.jar"]
+# The command to run when the container starts is now our script
+ENTRYPOINT ["./startup.sh"]
