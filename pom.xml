@@ -136,6 +136,17 @@
 					</annotationProcessorPaths>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>org.flywaydb</groupId>
+				<artifactId>flyway-maven-plugin</artifactId>
+				<version>11.11.2</version> <!-- Use the same version as your flyway-core dependency -->
+				<configuration>
+					<!-- The plugin needs to know where to find the database credentials -->
+					<url>${spring.datasource.url}</url>
+					<user>${spring.datasource.username}</user>
+					<password>${spring.datasource.password}</password>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 
