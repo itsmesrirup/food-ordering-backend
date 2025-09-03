@@ -101,6 +101,7 @@
 			<groupId>org.flywaydb</groupId>
 			<artifactId>flyway-core</artifactId>
 			<version>11.11.2</version> <!-- Use the latest available version -->
+			<scope>test</scope>
 		</dependency>
 
 		<!-- 2. Flyway PostgreSQL Support -->
@@ -109,6 +110,7 @@
 			<groupId>org.flywaydb</groupId>
 			<artifactId>flyway-database-postgresql</artifactId>
 			<version>11.11.2</version> <!-- Match the core version -->
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 
@@ -140,13 +142,28 @@
 				<groupId>org.flywaydb</groupId>
 				<artifactId>flyway-maven-plugin</artifactId>
 				<version>11.11.2</version> <!-- Use the same version as your flyway-core dependency -->
-				<configuration>
-					<url>${env.SPRING_DATASOURCE_URL}</url>
-					<user>${env.SPRING_DATASOURCE_USERNAME}</user>
-					<password>${env.SPRING_DATASOURCE_PASSWORD}</password>
-				</configuration>
 			</plugin>
 		</plugins>
 	</build>
+
+	<profiles>
+		<profile>
+			<id>prod-db</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.flywaydb</groupId>
+						<artifactId>flyway-maven-plugin</artifactId>
+						<configuration>
+							<!-- IMPORTANT: These will be passed from the command line -->
+							<url>${db.url}</url>
+							<user>${db.user}</user>
+							<password>${db.password}</password>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 
 </project>
