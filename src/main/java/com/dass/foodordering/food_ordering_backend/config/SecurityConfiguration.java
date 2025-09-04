@@ -36,6 +36,8 @@ public class SecurityConfiguration {
                 .requestMatchers("/actuator/health", "/api/auth/**").permitAll() 
                 .requestMatchers(HttpMethod.GET, "/api/restaurants", "/api/restaurants/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/customers/find-or-create", "/api/orders", "/api/reservations").permitAll()
+                // Allow both ADMIN and SUPER_ADMIN to get their own profile
+                .requestMatchers("/api/users/me").hasAnyAuthority("ADMIN", "SUPER_ADMIN")
 
                 // ADMIN endpoints (for restaurant owners)
                 .requestMatchers(HttpMethod.PUT, "/api/restaurants/{id}").hasAuthority("ADMIN")
