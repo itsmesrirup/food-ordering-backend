@@ -17,7 +17,7 @@ public class MenuItemResponse {
         this.name = menuItem.getName();
         this.price = menuItem.getPrice();
         this.description = menuItem.getDescription();
-        this.isAvailable = menuItem.isAvailable();
+        this.isAvailable = menuItem.getIsAvailable();
         if (menuItem.getRestaurant() != null) {
             this.restaurantId = menuItem.getRestaurant().getId();
         } else {

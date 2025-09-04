@@ -36,7 +36,7 @@ public class MenuItem {
     private boolean isAvailable = true;
 
     // GETTER/SETTER for isAvailable
-    public boolean isAvailable() {
+    public boolean getIsAvailable() {
         return isAvailable;
     }
 
