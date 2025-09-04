@@ -11,6 +11,8 @@ import com.dass.foodordering.food_ordering_backend.model.Restaurant;
 import com.dass.foodordering.food_ordering_backend.model.User;
 import com.dass.foodordering.food_ordering_backend.repository.MenuItemRepository;
 import com.dass.foodordering.food_ordering_backend.repository.RestaurantRepository;
+import com.dass.foodordering.food_ordering_backend.dto.response.CategorizedMenuResponse;
+import com.dass.foodordering.food_ordering_backend.repository.CategoryRepository;
 
 import lombok.Data;
 
@@ -33,6 +35,9 @@ public class RestaurantController {
     @Autowired
     private MenuItemRepository menuItemRepository;
 
+    @Autowired
+    private CategoryRepository categoryRepository;
+
     @GetMapping
     public List<RestaurantResponse> getAllRestaurants() {
         return restaurantRepository.findAll()
@@ -49,13 +54,14 @@ public class RestaurantController {
     }
 
     @GetMapping("/{restaurantId}/menu")
-    public List<MenuItemResponse> getRestaurantMenu(@PathVariable Long restaurantId) {
+    public List<CategorizedMenuResponse> getRestaurantMenu(@PathVariable Long restaurantId) {
         Restaurant restaurant = restaurantRepository.findById(restaurantId)
-                .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found with id: " + restaurantId));
 
-        return restaurant.getMenuItems().stream()
-                .map(MenuItemResponse::new)
-                .collect(Collectors.toList());
+        // Fetch only the top-level categories for this restaurant
+        return categoryRepository.findByRestaurantAndParentCategoryIsNull(restaurant).stream()
+            .map(CategorizedMenuResponse::new)
+            .collect(Collectors.toList());
     }
 
     // --- PROTECTED ADMIN ENDPOINTS ---

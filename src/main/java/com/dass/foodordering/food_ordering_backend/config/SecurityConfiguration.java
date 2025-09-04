@@ -45,7 +45,8 @@ public class SecurityConfiguration {
                 .requestMatchers("/api/menu-items/**").hasAuthority("ADMIN")
                 .requestMatchers("/api/orders/{id}/**").hasAuthority("ADMIN") // For status updates, etc.
                 .requestMatchers("/api/users/me").hasAuthority("ADMIN") // Getting their own profile
-
+                .requestMatchers("/api/categories/**").hasAuthority("ADMIN")
+                
                 // SUPER_ADMIN endpoints (for you)
                 .requestMatchers(HttpMethod.POST, "/api/restaurants").hasAuthority("SUPER_ADMIN")
                 // We would add more super admin routes here, e.g., GET /api/users, GET /api/restaurants/all-admin-list

@@ -19,6 +19,19 @@ public class MenuItem {
     @JoinColumn(name = "restaurant_id")
     private Restaurant restaurant;
 
+    // Link to a Category
+    @ManyToOne
+    @JoinColumn(name = "category_id")
+    private Category category;
+
+    // GETTER/SETTER for category
+    public Category getCategory() {
+        return category;
+    }
+    public void setCategory(Category category) {
+        this.category = category;
+    }
+
     // <-- This is required so OrderController can call setOrder(...)
     //@ManyToOne
     //@JoinColumn(name = "order_id")
