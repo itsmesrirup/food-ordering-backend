@@ -3,12 +3,17 @@ package com.dass.foodordering.food_ordering_backend.controller;
 import com.dass.foodordering.food_ordering_backend.dto.request.MenuItemRequest;
 import com.dass.foodordering.food_ordering_backend.dto.response.MenuItemResponse;
 import com.dass.foodordering.food_ordering_backend.exception.ResourceNotFoundException;
+import com.dass.foodordering.food_ordering_backend.model.Category;
 import com.dass.foodordering.food_ordering_backend.model.MenuItem;
 import com.dass.foodordering.food_ordering_backend.model.Restaurant;
+import com.dass.foodordering.food_ordering_backend.model.User;
+import com.dass.foodordering.food_ordering_backend.repository.CategoryRepository;
 import com.dass.foodordering.food_ordering_backend.repository.MenuItemRepository;
 import com.dass.foodordering.food_ordering_backend.repository.RestaurantRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,6 +28,9 @@ public class MenuItemController {
 
     @Autowired
     private RestaurantRepository restaurantRepository;
+
+    @Autowired
+    private CategoryRepository categoryRepository;
 
     // This endpoint is useful for a global search, but not for managing a specific menu
     @GetMapping
@@ -40,6 +48,17 @@ public class MenuItemController {
                 .orElseThrow(() -> new ResourceNotFoundException("Menu Item not found with id: " + id));
     }
 
+    @GetMapping("/by-restaurant")
+    public List<MenuItemResponse> getMenuItemsByRestaurant() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
+        Long restaurantId = currentUser.getRestaurant().getId();
+        
+        return menuItemRepository.findByRestaurantId(restaurantId).stream()
+                .map(MenuItemResponse::new)
+                .collect(Collectors.toList());
+    }
+
     // This endpoint is used by the RestaurantController's menu management
     // POST /api/restaurants/{restaurantId}/menu-items is more RESTful, but we will use this for now
     @PostMapping
@@ -47,11 +66,15 @@ public class MenuItemController {
         Restaurant restaurant = restaurantRepository.findById(request.getRestaurantId())
                 .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found with id: " + request.getRestaurantId()));
 
+        Category category = categoryRepository.findById(request.getCategoryId())
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
+                
         MenuItem menuItem = new MenuItem();
         menuItem.setName(request.getName());
         menuItem.setPrice(request.getPrice());
         menuItem.setDescription(request.getDescription());
         menuItem.setRestaurant(restaurant);
+        menuItem.setCategory(category); // Set the category
 
         MenuItem saved = menuItemRepository.save(menuItem);
         return new MenuItemResponse(saved);
@@ -62,10 +85,14 @@ public class MenuItemController {
         MenuItem menuItem = menuItemRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Menu Item not found with id: " + id));
 
+        Category category = categoryRepository.findById(menuItemDetails.getCategoryId())
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
+
         // You can't change the restaurant an item belongs to, so we don't update it.
         menuItem.setName(menuItemDetails.getName());
         menuItem.setPrice(menuItemDetails.getPrice());
         menuItem.setDescription(menuItemDetails.getDescription());
+        menuItem.setCategory(category); // Update the category
 
         MenuItem updatedItem = menuItemRepository.save(menuItem);
         return ResponseEntity.ok(new MenuItemResponse(updatedItem));

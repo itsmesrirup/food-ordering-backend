@@ -8,4 +8,5 @@ public class MenuItemRequest {
     private double price;
     private Long restaurantId;
     private String description;
+    private Long categoryId;
 }
