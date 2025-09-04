@@ -1,0 +1,1 @@
+ALTER TABLE menu_item RENAME COLUMN is_available TO available;

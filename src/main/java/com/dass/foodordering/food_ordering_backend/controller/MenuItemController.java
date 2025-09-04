@@ -107,7 +107,7 @@ public class MenuItemController {
         // DTO for the request body
         @Data
         public static class AvailabilityRequest {
-                private boolean isAvailable;
+                private boolean available;
         }
 
         // ENDPOINT
@@ -120,7 +120,7 @@ public class MenuItemController {
                 // verify ownership
                 MenuItem menuItem = findMenuItemAndVerifyOwnership(id); // You will need to create this helper method
 
-                menuItem.setAvailable(request.isAvailable());
+                menuItem.setAvailable(request.isAvailable()); // Lombok generates isAvailable() for a boolean 'available'
                 MenuItem updatedItem = menuItemRepository.save(menuItem);
                 return ResponseEntity.ok(new MenuItemResponse(updatedItem));
         }

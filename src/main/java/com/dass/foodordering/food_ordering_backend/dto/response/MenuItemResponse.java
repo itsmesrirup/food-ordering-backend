@@ -1,6 +1,7 @@
 package com.dass.foodordering.food_ordering_backend.dto.response;
 
 import com.dass.foodordering.food_ordering_backend.model.MenuItem;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class MenuItemResponse {
     private Long id;
@@ -8,7 +9,10 @@ public class MenuItemResponse {
     private Double price;
     private String description;
     private Long restaurantId;
-    private boolean isAvailable;
+
+    @JsonProperty("isAvailable")
+    private boolean available;
+
     private Long categoryId;
     private String categoryName;
 
@@ -17,7 +21,7 @@ public class MenuItemResponse {
         this.name = menuItem.getName();
         this.price = menuItem.getPrice();
         this.description = menuItem.getDescription();
-        this.isAvailable = menuItem.getIsAvailable();
+        this.available = menuItem.isAvailable();
         if (menuItem.getRestaurant() != null) {
             this.restaurantId = menuItem.getRestaurant().getId();
         } else {
@@ -37,5 +41,9 @@ public class MenuItemResponse {
     public Long getRestaurantId() { return restaurantId; }
     public Long getCategoryId() { return categoryId; }
     public String getCategoryName() { return categoryName; }
-    public boolean isAvailable() { return isAvailable; }
+
+    //  getter for the DTO field
+    public boolean isAvailable() {
+        return available;
+    }
 }

@@ -1,6 +1,7 @@
 package com.dass.foodordering.food_ordering_backend.model;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Table(name = "menu_item")
@@ -33,15 +34,15 @@ public class MenuItem {
     }
 
     // Defaults to true when a new item is created.
-    private boolean isAvailable = true;
+    private boolean available = true;
 
     // GETTER/SETTER for isAvailable
-    public boolean getIsAvailable() {
-        return isAvailable;
+    public boolean isAvailable() {
+        return available;
     }
 
     public void setAvailable(boolean available) {
-        isAvailable = available;
+        this.available = available;
     }
 
     // <-- This is required so OrderController can call setOrder(...)
