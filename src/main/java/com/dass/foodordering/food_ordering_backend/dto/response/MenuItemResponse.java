@@ -8,7 +8,7 @@ public class MenuItemResponse {
     private Double price;
     private String description;
     private Long restaurantId;
-    //private boolean isAvailable;
+    private boolean isAvailable;
     private Long categoryId;
     private String categoryName;
 
@@ -17,7 +17,7 @@ public class MenuItemResponse {
         this.name = menuItem.getName();
         this.price = menuItem.getPrice();
         this.description = menuItem.getDescription();
-        //this.isAvailable = menuItem.isAvailable();
+        this.isAvailable = menuItem.isAvailable();
         if (menuItem.getRestaurant() != null) {
             this.restaurantId = menuItem.getRestaurant().getId();
         } else {
@@ -37,4 +37,5 @@ public class MenuItemResponse {
     public Long getRestaurantId() { return restaurantId; }
     public Long getCategoryId() { return categoryId; }
     public String getCategoryName() { return categoryName; }
+    public boolean isAvailable() { return isAvailable; }
 }

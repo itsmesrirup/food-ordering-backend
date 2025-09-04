@@ -32,6 +32,18 @@ public class MenuItem {
         this.category = category;
     }
 
+    // Defaults to true when a new item is created.
+    private boolean isAvailable = true;
+
+    // GETTER/SETTER for isAvailable
+    public boolean isAvailable() {
+        return isAvailable;
+    }
+
+    public void setAvailable(boolean available) {
+        isAvailable = available;
+    }
+
     // <-- This is required so OrderController can call setOrder(...)
     //@ManyToOne
     //@JoinColumn(name = "order_id")

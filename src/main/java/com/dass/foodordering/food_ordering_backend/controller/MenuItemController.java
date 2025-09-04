@@ -10,6 +10,9 @@ import com.dass.foodordering.food_ordering_backend.model.User;
 import com.dass.foodordering.food_ordering_backend.repository.CategoryRepository;
 import com.dass.foodordering.food_ordering_backend.repository.MenuItemRepository;
 import com.dass.foodordering.food_ordering_backend.repository.RestaurantRepository;
+
+import lombok.Data;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -23,87 +26,124 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/menu-items")
 public class MenuItemController {
 
-    @Autowired
-    private MenuItemRepository menuItemRepository;
+        @Autowired
+        private MenuItemRepository menuItemRepository;
 
-    @Autowired
-    private RestaurantRepository restaurantRepository;
+        @Autowired
+        private RestaurantRepository restaurantRepository;
 
-    @Autowired
-    private CategoryRepository categoryRepository;
+        @Autowired
+        private CategoryRepository categoryRepository;
 
-    // This endpoint is useful for a global search, but not for managing a specific menu
-    @GetMapping
-    public List<MenuItemResponse> getAllMenuItems() {
-        return menuItemRepository.findAll()
-                .stream()
-                .map(MenuItemResponse::new)
-                .collect(Collectors.toList());
-    }
+        // This endpoint is useful for a global search, but not for managing a specific
+        // menu
+        @GetMapping
+        public List<MenuItemResponse> getAllMenuItems() {
+                return menuItemRepository.findAll()
+                                .stream()
+                                .map(MenuItemResponse::new)
+                                .collect(Collectors.toList());
+        }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<MenuItemResponse> getMenuItemById(@PathVariable Long id) {
-        return menuItemRepository.findById(id)
-                .map(menuItem -> ResponseEntity.ok(new MenuItemResponse(menuItem)))
-                .orElseThrow(() -> new ResourceNotFoundException("Menu Item not found with id: " + id));
-    }
+        @GetMapping("/{id}")
+        public ResponseEntity<MenuItemResponse> getMenuItemById(@PathVariable Long id) {
+                return menuItemRepository.findById(id)
+                                .map(menuItem -> ResponseEntity.ok(new MenuItemResponse(menuItem)))
+                                .orElseThrow(() -> new ResourceNotFoundException("Menu Item not found with id: " + id));
+        }
 
-    @GetMapping("/by-restaurant")
-    public List<MenuItemResponse> getMenuItemsByRestaurant() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User currentUser = (User) authentication.getPrincipal();
-        Long restaurantId = currentUser.getRestaurant().getId();
-        
-        return menuItemRepository.findByRestaurantId(restaurantId).stream()
-                .map(MenuItemResponse::new)
-                .collect(Collectors.toList());
-    }
+        @GetMapping("/by-restaurant")
+        public List<MenuItemResponse> getMenuItemsByRestaurant() {
+                Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+                User currentUser = (User) authentication.getPrincipal();
+                Long restaurantId = currentUser.getRestaurant().getId();
 
-    // This endpoint is used by the RestaurantController's menu management
-    // POST /api/restaurants/{restaurantId}/menu-items is more RESTful, but we will use this for now
-    @PostMapping
-    public MenuItemResponse createMenuItem(@RequestBody MenuItemRequest request) {
-        Restaurant restaurant = restaurantRepository.findById(request.getRestaurantId())
-                .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found with id: " + request.getRestaurantId()));
+                return menuItemRepository.findByRestaurantId(restaurantId).stream()
+                                .map(MenuItemResponse::new)
+                                .collect(Collectors.toList());
+        }
 
-        Category category = categoryRepository.findById(request.getCategoryId())
-                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
-                
-        MenuItem menuItem = new MenuItem();
-        menuItem.setName(request.getName());
-        menuItem.setPrice(request.getPrice());
-        menuItem.setDescription(request.getDescription());
-        menuItem.setRestaurant(restaurant);
-        menuItem.setCategory(category); // Set the category
+        // This endpoint is used by the RestaurantController's menu management
+        // POST /api/restaurants/{restaurantId}/menu-items is more RESTful, but we will
+        // use this for now
+        @PostMapping
+        public MenuItemResponse createMenuItem(@RequestBody MenuItemRequest request) {
+                Restaurant restaurant = restaurantRepository.findById(request.getRestaurantId())
+                                .orElseThrow(() -> new ResourceNotFoundException(
+                                                "Restaurant not found with id: " + request.getRestaurantId()));
 
-        MenuItem saved = menuItemRepository.save(menuItem);
-        return new MenuItemResponse(saved);
-    }
+                Category category = categoryRepository.findById(request.getCategoryId())
+                                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
 
-    @PutMapping("/{id}")
-    public ResponseEntity<MenuItemResponse> updateMenuItem(@PathVariable Long id, @RequestBody MenuItemRequest menuItemDetails) {
-        MenuItem menuItem = menuItemRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Menu Item not found with id: " + id));
+                MenuItem menuItem = new MenuItem();
+                menuItem.setName(request.getName());
+                menuItem.setPrice(request.getPrice());
+                menuItem.setDescription(request.getDescription());
+                menuItem.setRestaurant(restaurant);
+                menuItem.setCategory(category); // Set the category
 
-        Category category = categoryRepository.findById(menuItemDetails.getCategoryId())
-                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
+                MenuItem saved = menuItemRepository.save(menuItem);
+                return new MenuItemResponse(saved);
+        }
 
-        // You can't change the restaurant an item belongs to, so we don't update it.
-        menuItem.setName(menuItemDetails.getName());
-        menuItem.setPrice(menuItemDetails.getPrice());
-        menuItem.setDescription(menuItemDetails.getDescription());
-        menuItem.setCategory(category); // Update the category
+        @PutMapping("/{id}")
+        public ResponseEntity<MenuItemResponse> updateMenuItem(@PathVariable Long id,
+                        @RequestBody MenuItemRequest menuItemDetails) {
+                MenuItem menuItem = findMenuItemAndVerifyOwnership(id);
 
-        MenuItem updatedItem = menuItemRepository.save(menuItem);
-        return ResponseEntity.ok(new MenuItemResponse(updatedItem));
-    }
+                Category category = categoryRepository.findById(menuItemDetails.getCategoryId())
+                                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteMenuItem(@PathVariable Long id) {
-        MenuItem menuItem = menuItemRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Menu Item not found with id: " + id));
-        
-        menuItemRepository.delete(menuItem);
-        return ResponseEntity.noContent().build();
-    }
+                // You can't change the restaurant an item belongs to, so we don't update it.
+                menuItem.setName(menuItemDetails.getName());
+                menuItem.setPrice(menuItemDetails.getPrice());
+                menuItem.setDescription(menuItemDetails.getDescription());
+                menuItem.setCategory(category); // Update the category
+
+                MenuItem updatedItem = menuItemRepository.save(menuItem);
+                return ResponseEntity.ok(new MenuItemResponse(updatedItem));
+        }
+
+        // DTO for the request body
+        @Data
+        public static class AvailabilityRequest {
+                private boolean isAvailable;
+        }
+
+        // ENDPOINT
+        @PatchMapping("/{id}/availability")
+        public ResponseEntity<MenuItemResponse> updateAvailability(
+                        @PathVariable Long id,
+                        @RequestBody AvailabilityRequest request) {
+
+                // Reuse the security logic from your other admin endpoints to find the item and
+                // verify ownership
+                MenuItem menuItem = findMenuItemAndVerifyOwnership(id); // You will need to create this helper method
+
+                menuItem.setAvailable(request.isAvailable());
+                MenuItem updatedItem = menuItemRepository.save(menuItem);
+                return ResponseEntity.ok(new MenuItemResponse(updatedItem));
+        }
+
+        @DeleteMapping("/{id}")
+        public ResponseEntity<Void> deleteMenuItem(@PathVariable Long id) {
+                MenuItem menuItem = findMenuItemAndVerifyOwnership(id);
+
+                menuItemRepository.delete(menuItem);
+                return ResponseEntity.noContent().build();
+        }
+
+        private MenuItem findMenuItemAndVerifyOwnership(Long menuItemId) {
+                Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+                User currentUser = (User) authentication.getPrincipal();
+                Long userRestaurantId = currentUser.getRestaurant().getId();
+
+                MenuItem menuItem = menuItemRepository.findById(menuItemId)
+                                .orElseThrow(() -> new ResourceNotFoundException("Menu item not found"));
+
+                if (!menuItem.getRestaurant().getId().equals(userRestaurantId)) {
+                        throw new ResourceNotFoundException("Menu item not found");
+                }
+                return menuItem;
+        }
 }
