@@ -18,6 +18,11 @@ public class RestaurantResponse {
     private boolean reservationsEnabled;
     private boolean qrCodeOrderingEnabled;
 
+    // --- NEW THEME FIELDS ---
+    private String themePrimaryColor;
+    private String themeSecondaryColor;
+    private String logoUrl;
+
     public RestaurantResponse(Restaurant restaurant) {
         this.id = restaurant.getId();
         this.name = restaurant.getName();
@@ -34,5 +39,8 @@ public class RestaurantResponse {
                     .map(MenuItemResponse::new)
                     .collect(Collectors.toList());
         }
+        this.themePrimaryColor = restaurant.getThemePrimaryColor();
+        this.themeSecondaryColor = restaurant.getThemeSecondaryColor();
+        this.logoUrl = restaurant.getLogoUrl();
     }
 }

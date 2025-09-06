@@ -1,0 +1,4 @@
+ALTER TABLE restaurant
+ADD COLUMN IF NOT EXISTS theme_primary_color VARCHAR(255),
+ADD COLUMN IF NOT EXISTS theme_secondary_color VARCHAR(255),
+ADD COLUMN IF NOT EXISTS logo_url VARCHAR(255);

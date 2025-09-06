@@ -51,4 +51,10 @@ public class Restaurant {
     public void setMenuItems(List<MenuItem> menuItems) {
         this.menuItems = menuItems;
     }
+
+    // --- NEW THEME FIELDS ---
+    // We can store simple color hex codes as Strings.
+    private String themePrimaryColor;   // e.g., "#222222"
+    private String themeSecondaryColor; // e.g., "#D4AF37"
+    private String logoUrl;             // A URL to the restaurant's logo image
 }

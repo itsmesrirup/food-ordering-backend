@@ -111,6 +111,11 @@ public class RestaurantController {
         // Update feature flags
         restaurantToUpdate.setReservationsEnabled(restaurantDetails.isReservationsEnabled());
         restaurantToUpdate.setQrCodeOrderingEnabled(restaurantDetails.isQrCodeOrderingEnabled());
+
+        //Update the theme flags
+        restaurantToUpdate.setThemePrimaryColor(restaurantDetails.getThemePrimaryColor());
+        restaurantToUpdate.setThemeSecondaryColor(restaurantDetails.getThemeSecondaryColor());
+        restaurantToUpdate.setLogoUrl(restaurantDetails.getLogoUrl());
         
         Restaurant updatedRestaurant = restaurantRepository.save(restaurantToUpdate);
         return ResponseEntity.ok(new RestaurantResponse(updatedRestaurant));
