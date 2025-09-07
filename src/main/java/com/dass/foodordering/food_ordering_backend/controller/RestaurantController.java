@@ -116,6 +116,11 @@ public class RestaurantController {
         restaurantToUpdate.setThemePrimaryColor(restaurantDetails.getThemePrimaryColor());
         restaurantToUpdate.setThemeSecondaryColor(restaurantDetails.getThemeSecondaryColor());
         restaurantToUpdate.setLogoUrl(restaurantDetails.getLogoUrl());
+        restaurantToUpdate.setThemeBackgroundColor(restaurantDetails.getThemeBackgroundColor());
+        restaurantToUpdate.setThemePaperColor(restaurantDetails.getThemePaperColor());
+        restaurantToUpdate.setThemeTextColorPrimary(restaurantDetails.getThemeTextColorPrimary());
+        restaurantToUpdate.setThemeTextColorSecondary(restaurantDetails.getThemeTextColorSecondary());
+        restaurantToUpdate.setThemeBackgroundImageUrl(restaurantDetails.getThemeBackgroundImageUrl());
         
         Restaurant updatedRestaurant = restaurantRepository.save(restaurantToUpdate);
         return ResponseEntity.ok(new RestaurantResponse(updatedRestaurant));

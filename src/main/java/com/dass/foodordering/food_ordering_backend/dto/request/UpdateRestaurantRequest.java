@@ -17,4 +17,15 @@ public class UpdateRestaurantRequest {
     private String themePrimaryColor;   // e.g., "#222222"
     private String themeSecondaryColor; // e.g., "#D4AF37"
     private String logoUrl;   
+
+    // Background and Paper Colors
+    private String themeBackgroundColor;    // e.g., "#1a1a1a"
+    private String themePaperColor;       // e.g., "#2c2c2c"
+
+    // Text Colors
+    private String themeTextColorPrimary;   // e.g., "#ffffff"
+    private String themeTextColorSecondary; // e.g., "#bbbbbb"
+    
+    // Hero/Background Image
+    private String themeBackgroundImageUrl; // URL to a large background image
 }
