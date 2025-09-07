@@ -11,6 +11,9 @@ public class RestaurantSettingsResponse {
     private String email;
     private boolean reservationsEnabled;
     private boolean qrCodeOrderingEnabled;
+    private boolean useDarkTheme;
+    private String logoUrl;
+    private String heroImageUrl;
 
     public RestaurantSettingsResponse(Restaurant restaurant) {
         this.id = restaurant.getId();
@@ -19,5 +22,8 @@ public class RestaurantSettingsResponse {
         this.email = restaurant.getEmail();
         this.reservationsEnabled = restaurant.isReservationsEnabled();
         this.qrCodeOrderingEnabled = restaurant.isQrCodeOrderingEnabled();
+        this.useDarkTheme = restaurant.isUseDarkTheme();
+        this.logoUrl = restaurant.getLogoUrl();
+        this.heroImageUrl = restaurant.getHeroImageUrl();
     }
 }
