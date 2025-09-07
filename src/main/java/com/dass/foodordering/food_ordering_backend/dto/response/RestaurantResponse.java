@@ -19,21 +19,11 @@ public class RestaurantResponse {
     private boolean qrCodeOrderingEnabled;
 
     // --- NEW THEME FIELDS ---
-    private String themePrimaryColor;
-    private String themeSecondaryColor;
+    private boolean useDarkTheme;
     private String logoUrl;
+    private String heroImageUrl;
 
-    // Background and Paper Colors
-    private String themeBackgroundColor;    // e.g., "#1a1a1a"
-    private String themePaperColor;       // e.g., "#2c2c2c"
-
-    // Text Colors
-    private String themeTextColorPrimary;   // e.g., "#ffffff"
-    private String themeTextColorSecondary; // e.g., "#bbbbbb"
     
-    // Hero/Background Image
-    private String themeBackgroundImageUrl; // URL to a large background image
-
     public RestaurantResponse(Restaurant restaurant) {
         this.id = restaurant.getId();
         this.name = restaurant.getName();
@@ -50,14 +40,9 @@ public class RestaurantResponse {
                     .map(MenuItemResponse::new)
                     .collect(Collectors.toList());
         }
-        this.themePrimaryColor = restaurant.getThemePrimaryColor();
-        this.themeSecondaryColor = restaurant.getThemeSecondaryColor();
+        this.useDarkTheme = restaurant.isUseDarkTheme();
         this.logoUrl = restaurant.getLogoUrl();
-
-        this.themeBackgroundColor = restaurant.getThemeBackgroundColor();
-        this.themePaperColor = restaurant.getThemePaperColor();
-        this.themeTextColorPrimary = restaurant.getThemeTextColorPrimary();
-        this.themeTextColorSecondary = restaurant.getThemeTextColorSecondary();
-        this.themeBackgroundImageUrl = restaurant.getThemeBackgroundImageUrl();
+        this.heroImageUrl = restaurant.getHeroImageUrl();
+        
     }
 }
