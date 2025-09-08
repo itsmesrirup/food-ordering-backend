@@ -47,6 +47,7 @@ public class SecurityConfiguration {
                 .requestMatchers("/api/users/me").hasAuthority("ADMIN") // Getting their own profile
                 .requestMatchers("/api/categories/**").hasAuthority("ADMIN")
                 .requestMatchers(HttpMethod.PATCH, "/api/menu-items/{id}/availability").hasAuthority("ADMIN")
+                .requestMatchers("/api/analytics/**").hasAuthority("ADMIN")
                 
                 // SUPER_ADMIN endpoints (for you)
                 .requestMatchers(HttpMethod.POST, "/api/restaurants").hasAuthority("SUPER_ADMIN")
