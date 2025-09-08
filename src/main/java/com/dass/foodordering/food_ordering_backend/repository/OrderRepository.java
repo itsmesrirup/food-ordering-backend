@@ -1,7 +1,6 @@
 package com.dass.foodordering.food_ordering_backend.repository;
 
 import com.dass.foodordering.food_ordering_backend.dto.response.AnalyticsSummaryResponse;
-import com.dass.foodordering.food_ordering_backend.dto.response.OrdersByHourResponse;
 import com.dass.foodordering.food_ordering_backend.dto.response.SalesByPeriodResponse;
 import com.dass.foodordering.food_ordering_backend.model.Order;
 
@@ -36,11 +35,12 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     List<SalesByPeriodResponse> findSalesByDay(@Param("restaurantId") Long restaurantId, @Param("startDate") LocalDateTime startDate);
 
     // Query for order counts, grouped by the hour of the day
-    @Query("SELECT new com.dass.foodordering.food_ordering_backend.dto.response.OrdersByHourResponse(" +
-        "FUNCTION('HOUR', o.orderTime), " +
-        "COUNT(o)) " +
-        "FROM Order o WHERE o.restaurant.id = :restaurantId " +
-        "GROUP BY FUNCTION('HOUR', o.orderTime) " +
-        "ORDER BY FUNCTION('HOUR', o.orderTime) ASC")
-    List<OrdersByHourResponse> findOrdersByHour(@Param("restaurantId") Long restaurantId);
+    @Query(value = "SELECT " +
+                   "EXTRACT(HOUR FROM o.order_time) AS hour, " +
+                   "COUNT(*) AS orderCount " +
+                   "FROM orders o WHERE o.restaurant_id = :restaurantId " +
+                   "GROUP BY EXTRACT(HOUR FROM o.order_time) " +
+                   "ORDER BY hour ASC",
+           nativeQuery = true)
+    List<OrdersByHourResponseProjection> findOrdersByHourNative(@Param("restaurantId") Long restaurantId);
 }

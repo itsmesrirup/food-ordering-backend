@@ -9,6 +9,8 @@ import com.dass.foodordering.food_ordering_backend.model.User;
 import com.dass.foodordering.food_ordering_backend.repository.MenuItemRepository;
 import com.dass.foodordering.food_ordering_backend.repository.OrderItemRepository;
 import com.dass.foodordering.food_ordering_backend.repository.OrderRepository;
+import com.dass.foodordering.food_ordering_backend.repository.OrdersByHourResponseProjection;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -59,7 +61,14 @@ public class AnalyticsController {
     @GetMapping("/orders-by-hour")
     public List<OrdersByHourResponse> getOrdersByHour() {
         Long restaurantId = getCurrentUserRestaurantId();
-        return orderRepository.findOrdersByHour(restaurantId);
+        
+        // Call the new native query method
+        List<OrdersByHourResponseProjection> results = orderRepository.findOrdersByHourNative(restaurantId);
+        
+        // Manually map the projection results to our DTO
+        return results.stream()
+                .map(proj -> new OrdersByHourResponse(proj.getHour(), proj.getOrderCount()))
+                .collect(Collectors.toList());
     }
 
     @GetMapping("/recommendations/{menuItemId}")
