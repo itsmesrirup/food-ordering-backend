@@ -20,10 +20,10 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     // Custom query for sales summary
     @Query("SELECT new com.dass.foodordering.food_ordering_backend.dto.response.AnalyticsSummaryResponse(" +
-           "COALESCE(SUM(o.totalPrice), 0.0), " +
-           "COALESCE(COUNT(o), 0L), " +
-           "COALESCE(AVG(o.totalPrice), 0.0)) " +
-           "FROM Order o WHERE o.restaurant.id = :restaurantId")
+        "COALESCE(SUM(o.totalPrice), 0.0), " +
+        "COALESCE(COUNT(o), 0L), " +
+        "COALESCE(AVG(o.totalPrice), 0.0)) " + // AVG returns Double
+        "FROM Order o WHERE o.restaurant.id = :restaurantId")
     AnalyticsSummaryResponse getAnalyticsSummary(@Param("restaurantId") Long restaurantId);
 
     // Query for sales over the last 30 days, grouped by day

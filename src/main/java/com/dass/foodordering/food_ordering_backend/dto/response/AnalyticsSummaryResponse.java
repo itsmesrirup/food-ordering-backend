@@ -2,11 +2,13 @@ package com.dass.foodordering.food_ordering_backend.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class AnalyticsSummaryResponse {
-    private double totalRevenue;
-    private long totalOrders;
-    private double averageOrderValue;
+    private Double totalRevenue;
+    private Long totalOrders;
+    private Double averageOrderValue;
 }
