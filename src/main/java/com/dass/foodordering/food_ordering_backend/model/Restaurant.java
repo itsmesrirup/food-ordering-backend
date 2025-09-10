@@ -32,6 +32,9 @@ public class Restaurant {
 
     @Column(nullable = false)
     private boolean qrCodeOrderingEnabled = false; // Default to OFF
+
+    @Column(nullable = false)
+    private boolean recommendationsEnabled = false; // Default to OFF
     
     // Example for a future feature
     // @Column(nullable = false)

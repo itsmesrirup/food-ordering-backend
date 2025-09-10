@@ -111,6 +111,7 @@ public class RestaurantController {
         // Update feature flags
         restaurantToUpdate.setReservationsEnabled(restaurantDetails.isReservationsEnabled());
         restaurantToUpdate.setQrCodeOrderingEnabled(restaurantDetails.isQrCodeOrderingEnabled());
+        restaurantToUpdate.setRecommendationsEnabled(restaurantDetails.isRecommendationsEnabled());
 
         //Update the theme flags
         restaurantToUpdate.setUseDarkTheme(restaurantDetails.isUseDarkTheme());

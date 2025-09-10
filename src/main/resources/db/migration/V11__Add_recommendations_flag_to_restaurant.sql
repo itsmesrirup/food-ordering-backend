@@ -1,0 +1,2 @@
+ALTER TABLE restaurant
+ADD COLUMN IF NOT EXISTS recommendations_enabled BOOLEAN NOT NULL DEFAULT FALSE;

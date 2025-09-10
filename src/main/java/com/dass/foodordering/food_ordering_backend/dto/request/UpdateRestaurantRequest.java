@@ -11,6 +11,7 @@ public class UpdateRestaurantRequest {
     // --- New Feature Flags ---
     private boolean reservationsEnabled;
     private boolean qrCodeOrderingEnabled;
+    private boolean recommendationsEnabled;
 
     // --- NEW THEME FIELDS ---
     // We can store simple color hex codes as Strings.
