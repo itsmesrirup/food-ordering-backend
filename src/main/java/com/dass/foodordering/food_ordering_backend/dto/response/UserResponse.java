@@ -10,6 +10,7 @@ public class UserResponse {
     private Long restaurantId;
     private String restaurantName;
     private String role;
+    private String logoUrl;
 
     public UserResponse(User user) {
         this.id = user.getId();
@@ -17,6 +18,7 @@ public class UserResponse {
         if (user.getRestaurant() != null) {
             this.restaurantId = user.getRestaurant().getId();
             this.restaurantName = user.getRestaurant().getName();
+            this.logoUrl = user.getRestaurant().getLogoUrl();
         }
         this.role = user.getRole().name();
     }
