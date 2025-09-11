@@ -1,7 +1,9 @@
 package com.dass.foodordering.food_ordering_backend.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import jakarta.persistence.*;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Table(name = "menu_item")
@@ -45,10 +47,24 @@ public class MenuItem {
         this.available = available;
     }
 
-    // <-- This is required so OrderController can call setOrder(...)
-    //@ManyToOne
-    //@JoinColumn(name = "order_id")
-    //private Order order;
+    @Column(nullable = false)
+    private boolean isBundle = false; // Flag to identify "Formule" items
+
+    public boolean isBundle() {
+        return isBundle;
+    }
+    public void setBundle(boolean isBundle) {
+        this.isBundle = isBundle;
+    }
+    public List<MenuItemOption> getOptions() {
+        return options;
+    }
+    public void setOptions(List<MenuItemOption> options) {
+        this.options = options;
+    }
+
+    @OneToMany(mappedBy = "menuItem", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<MenuItemOption> options = new ArrayList<>();
 
     // --- getters/setters ---
     public Long getId() { return id; }
@@ -66,6 +82,5 @@ public class MenuItem {
     public Restaurant getRestaurant() { return restaurant; }
     public void setRestaurant(Restaurant restaurant) { this.restaurant = restaurant; }
 
-    //public Order getOrder() { return order; }
-    //public void setOrder(Order order) { this.order = order; }
+    
 }

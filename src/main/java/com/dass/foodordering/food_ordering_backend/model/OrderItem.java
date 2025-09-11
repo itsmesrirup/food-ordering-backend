@@ -20,4 +20,9 @@ public class OrderItem {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
+
+    // Store the selected choices as a simple JSON string
+    // e.g., "[{\"option\":\"Entrée au choix\",\"choice\":\"SAMOSSA\"}, ...]"
+    @Column(columnDefinition = "TEXT")
+    private String selectedOptions;
 }
