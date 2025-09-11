@@ -50,6 +50,8 @@ public class SecurityConfiguration {
                 .requestMatchers("/api/categories/**").hasAuthority("ADMIN")
                 .requestMatchers(HttpMethod.PATCH, "/api/menu-items/{id}/availability").hasAuthority("ADMIN")
                 .requestMatchers("/api/analytics/**").hasAuthority("ADMIN")
+                .requestMatchers("/api/menu-item-options/**").hasAuthority("ADMIN")
+                .requestMatchers("/api/menu-item-option-choices/**").hasAuthority("ADMIN")
                 
                 // SUPER_ADMIN endpoints (for you)
                 .requestMatchers(HttpMethod.POST, "/api/restaurants").hasAuthority("SUPER_ADMIN")

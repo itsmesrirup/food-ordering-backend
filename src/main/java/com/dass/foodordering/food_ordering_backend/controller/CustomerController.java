@@ -12,7 +12,6 @@ import lombok.Data;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import com.dass.foodordering.food_ordering_backend.repository.CustomerRepository;
 
 import java.util.List;
 import java.util.stream.Collectors;
