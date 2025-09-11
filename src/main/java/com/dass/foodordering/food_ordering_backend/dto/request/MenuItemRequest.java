@@ -9,4 +9,5 @@ public class MenuItemRequest {
     private Long restaurantId;
     private String description;
     private Long categoryId;
+    private boolean isBundle;
 }

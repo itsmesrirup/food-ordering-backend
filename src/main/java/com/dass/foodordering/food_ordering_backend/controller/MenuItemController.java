@@ -81,6 +81,7 @@ public class MenuItemController {
                 menuItem.setDescription(request.getDescription());
                 menuItem.setRestaurant(restaurant);
                 menuItem.setCategory(category); // Set the category
+                menuItem.setBundle(request.isBundle());
 
                 MenuItem saved = menuItemRepository.save(menuItem);
                 return new MenuItemResponse(saved);
@@ -99,6 +100,7 @@ public class MenuItemController {
                 menuItem.setPrice(menuItemDetails.getPrice());
                 menuItem.setDescription(menuItemDetails.getDescription());
                 menuItem.setCategory(category); // Update the category
+                menuItem.setBundle(menuItemDetails.isBundle());
 
                 MenuItem updatedItem = menuItemRepository.save(menuItem);
                 return ResponseEntity.ok(new MenuItemResponse(updatedItem));
