@@ -47,14 +47,14 @@ public class MenuItem {
         this.available = available;
     }
 
-    @Column(nullable = false)
-    private boolean isBundle = false; // Flag to identify "Formule" items
+    @Column(name = "is_bundle")
+    private boolean bundle = false; // Flag to identify "Formule" items
 
     public boolean isBundle() {
-        return isBundle;
+        return bundle;
     }
-    public void setBundle(boolean isBundle) {
-        this.isBundle = isBundle;
+    public void setBundle(boolean bundle) {
+        this.bundle = bundle;
     }
     public List<MenuItemOption> getOptions() {
         return options;
