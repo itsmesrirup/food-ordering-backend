@@ -45,11 +45,11 @@ public class MenuItemController {
                                 .collect(Collectors.toList());
         }
 
+        // For the modal to fetch the most up-to-date item data
         @GetMapping("/{id}")
-        public ResponseEntity<MenuItemResponse> getMenuItemById(@PathVariable Long id) {
-                return menuItemRepository.findById(id)
-                                .map(menuItem -> ResponseEntity.ok(new MenuItemResponse(menuItem)))
-                                .orElseThrow(() -> new ResourceNotFoundException("Menu Item not found with id: " + id));
+        public MenuItemResponse getMenuItemById(@PathVariable Long id) {
+        MenuItem menuItem = findMenuItemAndVerifyOwnership(id); // Reuse our security helper
+        return new MenuItemResponse(menuItem);
         }
 
         @GetMapping("/by-restaurant")
