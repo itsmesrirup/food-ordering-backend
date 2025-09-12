@@ -15,6 +15,7 @@ public class MenuItemResponse {
 
     private Long categoryId;
     private String categoryName;
+    private boolean bundle;
 
     public MenuItemResponse(MenuItem menuItem) {
         this.id = menuItem.getId();
@@ -22,6 +23,7 @@ public class MenuItemResponse {
         this.price = menuItem.getPrice();
         this.description = menuItem.getDescription();
         this.available = menuItem.isAvailable();
+        this.bundle = menuItem.isBundle();
         if (menuItem.getRestaurant() != null) {
             this.restaurantId = menuItem.getRestaurant().getId();
         } else {
@@ -45,5 +47,8 @@ public class MenuItemResponse {
     //  getter for the DTO field
     public boolean isAvailable() {
         return available;
+    }
+    public boolean isBundle() {
+        return bundle;
     }
 }
