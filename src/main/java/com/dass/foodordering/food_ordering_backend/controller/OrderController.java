@@ -17,6 +17,8 @@ import com.dass.foodordering.food_ordering_backend.repository.MenuItemRepository
 import com.dass.foodordering.food_ordering_backend.repository.OrderRepository;
 import com.dass.foodordering.food_ordering_backend.repository.RestaurantRepository;
 import com.dass.foodordering.food_ordering_backend.service.EmailService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.dass.foodordering.food_ordering_backend.exception.BadRequestException;
 
 import lombok.Data;
@@ -70,7 +72,7 @@ public class OrderController {
     }
 
     @PostMapping
-    public OrderResponse createOrder(@RequestBody OrderRequest request) {
+    public OrderResponse createOrder(@RequestBody OrderRequest request) throws JsonProcessingException {
         Customer customer = customerRepository.findById(request.getCustomerId())
                 .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id: "+request.getCustomerId()));
 
@@ -111,6 +113,7 @@ public class OrderController {
         
         // Create OrderItem objects and calculate total price
         double totalPrice = 0;
+        ObjectMapper objectMapper = new ObjectMapper(); // For converting list to JSON string
         for (OrderItemRequest itemRequest : request.getItems()) {
             MenuItem menuItem = menuItems.stream()
                 .filter(mi -> mi.getId().equals(itemRequest.getMenuItemId()))
@@ -120,6 +123,13 @@ public class OrderController {
             orderItem.setMenuItem(menuItem);
             orderItem.setQuantity(itemRequest.getQuantity());
             order.addOrderItem(orderItem); // Use the helper method
+
+            // Save the selected options
+            if (itemRequest.getSelectedOptions() != null && !itemRequest.getSelectedOptions().isEmpty()) {
+                // Convert the List<String> to a JSON array string for storage
+                String selectedOptionsJson = objectMapper.writeValueAsString(itemRequest.getSelectedOptions());
+                orderItem.setSelectedOptions(selectedOptionsJson);
+            }
             
             totalPrice += menuItem.getPrice() * itemRequest.getQuantity();
         }
