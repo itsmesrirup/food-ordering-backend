@@ -113,24 +113,22 @@ public class OrderController {
         
         // Create OrderItem objects and calculate total price
         double totalPrice = 0;
-        ObjectMapper objectMapper = new ObjectMapper(); // For converting list to JSON string
         for (OrderItemRequest itemRequest : request.getItems()) {
             MenuItem menuItem = menuItems.stream()
                 .filter(mi -> mi.getId().equals(itemRequest.getMenuItemId()))
-                .findFirst().orElseThrow(); // Should not happen due to our earlier check
-                
+                .findFirst().orElseThrow();
+
             OrderItem orderItem = new OrderItem();
             orderItem.setMenuItem(menuItem);
             orderItem.setQuantity(itemRequest.getQuantity());
-            order.addOrderItem(orderItem); // Use the helper method
 
-            // Save the selected options
+            // Save the structured selected options
             if (itemRequest.getSelectedOptions() != null && !itemRequest.getSelectedOptions().isEmpty()) {
-                // Convert the List<String> to a JSON array string for storage
-                String selectedOptionsJson = objectMapper.writeValueAsString(itemRequest.getSelectedOptions());
-                orderItem.setSelectedOptions(selectedOptionsJson);
+                orderItem.setSelectedOptionsFromList(itemRequest.getSelectedOptions());
             }
-            
+
+            order.addOrderItem(orderItem);
+
             totalPrice += menuItem.getPrice() * itemRequest.getQuantity();
         }
         order.setTotalPrice(totalPrice);
