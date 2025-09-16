@@ -24,8 +24,8 @@ public class Order {
     @Column(nullable = false)
     private double totalPrice = 0.0;
 
-    @ManyToOne
-    @JoinColumn(name = "customer_id")
+    @ManyToOne(optional = false) // Make this relationship required
+    @JoinColumn(name = "customer_id", nullable = false)
     private Customer customer;
 
     // ✅ Add restaurant relation so setRestaurant(...) exists
