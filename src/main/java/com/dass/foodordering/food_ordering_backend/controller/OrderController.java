@@ -73,8 +73,23 @@ public class OrderController {
 
     @PostMapping
     public OrderResponse createOrder(@RequestBody OrderRequest request) throws JsonProcessingException {
-        Customer customer = customerRepository.findById(request.getCustomerId())
-                .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id: "+request.getCustomerId()));
+        // Validate that we have either customerId OR guest information
+        boolean isGuestOrder = request.getCustomerId() == null;
+        Customer customer = null;
+        
+        if (isGuestOrder) {
+            // Guest order validation
+            if (request.getGuestName() == null || request.getGuestName().trim().isEmpty()) {
+                throw new BadRequestException("Guest name is required for guest orders.");
+            }
+            if (request.getGuestEmail() == null || request.getGuestEmail().trim().isEmpty()) {
+                throw new BadRequestException("Guest email is required for guest orders.");
+            }
+        } else {
+            // Customer order validation
+            customer = customerRepository.findById(request.getCustomerId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id: " + request.getCustomerId()));
+        }
 
         if (request.getItems() == null || request.getItems().isEmpty()) {
             throw new BadRequestException("Order must contain at least one item.");
@@ -98,10 +113,16 @@ public class OrderController {
         }
 
         Order order = new Order();
-        order.setCustomer(customer);
+        order.setCustomer(customer); // Will be null for guest orders
         order.setRestaurant(restaurant);
         order.setStatus(OrderStatus.PENDING);
         order.setOrderTime(LocalDateTime.now());
+
+        // Set guest information if this is a guest order
+        if (isGuestOrder) {
+            order.setGuestName(request.getGuestName());
+            order.setGuestEmail(request.getGuestEmail());
+        }
 
         if (request.getTableNumber() != null && !request.getTableNumber().isEmpty()) {
             if (!restaurant.isQrCodeOrderingEnabled()) {

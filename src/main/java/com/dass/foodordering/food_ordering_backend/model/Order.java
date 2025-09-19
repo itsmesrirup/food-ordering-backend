@@ -24,8 +24,8 @@ public class Order {
     @Column(nullable = false)
     private double totalPrice = 0.0;
 
-    @ManyToOne(optional = false) // Make this relationship required
-    @JoinColumn(name = "customer_id", nullable = false)
+    @ManyToOne(optional = true) // Make this relationship optional for guest orders
+    @JoinColumn(name = "customer_id", nullable = true)
     private Customer customer;
 
     // ✅ Add restaurant relation so setRestaurant(...) exists
@@ -68,6 +68,10 @@ public class Order {
     //To store the table number for QR code orders.
     private String tableNumber;
 
+    // Guest order fields - for orders placed without customer account
+    private String guestName;
+    private String guestEmail;
+
     // --- getters/setters for tableNumber ---
     public String getTableNumber() {
         return tableNumber;
@@ -75,6 +79,23 @@ public class Order {
 
     public void setTableNumber(String tableNumber) {
         this.tableNumber = tableNumber;
+    }
+
+    // --- getters/setters for guest fields ---
+    public String getGuestName() {
+        return guestName;
+    }
+
+    public void setGuestName(String guestName) {
+        this.guestName = guestName;
+    }
+
+    public String getGuestEmail() {
+        return guestEmail;
+    }
+
+    public void setGuestEmail(String guestEmail) {
+        this.guestEmail = guestEmail;
     }
 
     // --- helpers to keep both sides in sync ---

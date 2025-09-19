@@ -15,6 +15,10 @@ public class OrderResponse {
     private List<OrderItemResponse> items; // Changed from menuItems
     private double totalPrice;
     private String tableNumber;
+    
+    // Guest order fields
+    private String guestName;
+    private String guestEmail;
 
     public OrderResponse(Order order) {
         this.id = order.getId();
@@ -26,6 +30,8 @@ public class OrderResponse {
                 .map(OrderItemResponse::new)
                 .collect(Collectors.toList());
         this.tableNumber = order.getTableNumber();
+        this.guestName = order.getGuestName();
+        this.guestEmail = order.getGuestEmail();
     }
 
     // Getters
@@ -37,4 +43,6 @@ public class OrderResponse {
     public List<OrderItemResponse> getItems() { return items; }
     public Double getTotalPrice() { return totalPrice; }
     public String getTableNumber() { return tableNumber; }
+    public String getGuestName() { return guestName; }
+    public String getGuestEmail() { return guestEmail; }
 }
