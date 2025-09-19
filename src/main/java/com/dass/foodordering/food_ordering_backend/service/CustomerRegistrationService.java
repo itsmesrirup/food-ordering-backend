@@ -3,6 +3,7 @@ package com.dass.foodordering.food_ordering_backend.service;
 import com.dass.foodordering.food_ordering_backend.model.*;
 import com.dass.foodordering.food_ordering_backend.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,6 +15,7 @@ public class CustomerRegistrationService {
     private final CustomerRepository customerRepository;
     private final RestaurantRepository restaurantRepository;
     private final CustomerRestaurantRepository customerRestaurantRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional
     public Customer linkCustomerToRestaurant(String name, String email, String password, Long restaurantId) {
@@ -22,7 +24,7 @@ public class CustomerRegistrationService {
                 Customer c = Customer.builder()
                         .name(name)
                         .email(email)
-                        .password(password)
+                        .password(passwordEncoder.encode(password)) // Hash the password
                         .role(Role.USER)
                         .build();
                 return customerRepository.save(c);

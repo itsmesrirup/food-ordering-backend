@@ -21,23 +21,24 @@ public class CustomerAuthenticationService {
     private final JwtService jwtService;
 
     public CustomerAuthResponse register(CustomerRegisterRequest request) {
-        if (customerRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new IllegalStateException("An account with this email already exists.");
-        }
+        // Check if customer already exists (might have been created by CustomerRegistrationService)
+        Customer customer = customerRepository.findByEmail(request.getEmail())
+                .orElseGet(() -> {
+                    // Create new customer if doesn't exist
+                    var newCustomer = Customer.builder()
+                            .name(request.getName())
+                            .email(request.getEmail())
+                            .password(passwordEncoder.encode(request.getPassword()))
+                            .role(Role.USER)
+                            .build();
+                    return customerRepository.save(newCustomer);
+                });
 
-        var customer = Customer.builder()
-                .name(request.getName())
-                .email(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .role(Role.USER)
-                .build();
-        var savedCustomer = customerRepository.save(customer);
-
-        var jwtToken = jwtService.generateToken(savedCustomer);
+        var jwtToken = jwtService.generateToken(customer);
 
         return CustomerAuthResponse.builder()
-                .customerId(savedCustomer.getId())
-                .email(savedCustomer.getEmail())
+                .customerId(customer.getId())
+                .email(customer.getEmail())
                 .message("Registration successful")
                 .token(jwtToken)
                 .build();
