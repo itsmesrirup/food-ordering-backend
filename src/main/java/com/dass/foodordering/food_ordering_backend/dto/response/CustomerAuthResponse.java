@@ -10,5 +10,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CustomerAuthResponse {
-    private String token;
+    private Long customerId;
+    private String email;
+    private String message;
+    private String token; // <-- JWT token for frontend authentication
 }

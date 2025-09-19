@@ -32,9 +32,13 @@ public class CustomerAuthenticationService {
                 .role(Role.USER)
                 .build();
         var savedCustomer = customerRepository.save(customer);
-        
+
         var jwtToken = jwtService.generateToken(savedCustomer);
+
         return CustomerAuthResponse.builder()
+                .customerId(savedCustomer.getId())
+                .email(savedCustomer.getEmail())
+                .message("Registration successful")
                 .token(jwtToken)
                 .build();
     }
@@ -46,9 +50,13 @@ public class CustomerAuthenticationService {
         if (!passwordEncoder.matches(request.getPassword(), customer.getPassword())) {
             throw new BadCredentialsException("Invalid email or password.");
         }
-        
+
         var jwtToken = jwtService.generateToken(customer);
+
         return CustomerAuthResponse.builder()
+                .customerId(customer.getId())
+                .email(customer.getEmail())
+                .message("Authentication successful")
                 .token(jwtToken)
                 .build();
     }
