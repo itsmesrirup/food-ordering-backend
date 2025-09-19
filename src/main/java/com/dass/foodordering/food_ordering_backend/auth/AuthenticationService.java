@@ -1,6 +1,7 @@
 package com.dass.foodordering.food_ordering_backend.auth;
 
 import com.dass.foodordering.food_ordering_backend.config.JwtService;
+import com.dass.foodordering.food_ordering_backend.exception.BadRequestException;
 import com.dass.foodordering.food_ordering_backend.exception.ResourceNotFoundException;
 import com.dass.foodordering.food_ordering_backend.model.Restaurant;
 import com.dass.foodordering.food_ordering_backend.model.Role;
@@ -24,6 +25,11 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
 
     public AuthenticationResponse register(RegisterRequest request) {
+        // Check if restaurantId is null or missing
+        if (request.getRestaurantId() == null) {
+            throw new BadRequestException("Please sign up from a restaurant's page.");
+        }
+        
         Restaurant restaurant = restaurantRepository.findById(request.getRestaurantId())
                 .orElseThrow(() -> new ResourceNotFoundException("Cannot register user: Restaurant not found"));
 
