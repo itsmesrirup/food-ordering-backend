@@ -39,7 +39,7 @@ public class SecurityConfiguration {
                 // Allow public access to the AI recommendations
                 .requestMatchers(HttpMethod.GET, "/api/analytics/recommendations/**").permitAll()
                 //to whitelist the new public login/signup endpoints.
-                .requestMatchers("/api/customer/auth/**").permitAll()
+                .requestMatchers("/api/auth/customer/**").permitAll()
                 // Allow both ADMIN and SUPER_ADMIN to get their own profile
                 .requestMatchers("/api/users/me").hasAnyAuthority("ADMIN", "SUPER_ADMIN")
 
