@@ -1,0 +1,2 @@
+ALTER TABLE special
+ADD COLUMN IF NOT EXISTS day_of_week VARCHAR(255);

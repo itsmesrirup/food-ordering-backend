@@ -61,4 +61,7 @@ public class Restaurant {
     private String logoUrl; // A URL to the restaurant's logo image
     private String heroImageUrl;
 
+    @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<SpecialMenu> specialMenus = new ArrayList<>();
+
 }

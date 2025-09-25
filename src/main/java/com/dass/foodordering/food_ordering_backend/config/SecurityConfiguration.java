@@ -38,6 +38,8 @@ public class SecurityConfiguration {
                 .requestMatchers(HttpMethod.POST, "/api/customers/find-or-create", "/api/orders", "/api/reservations").permitAll()
                 // Allow public access to the AI recommendations
                 .requestMatchers(HttpMethod.GET, "/api/analytics/recommendations/**").permitAll()
+                .requestMatchers("/api/special-menus/restaurant/{restaurantId}/active").permitAll()
+                
                 // Allow both ADMIN and SUPER_ADMIN to get their own profile
                 .requestMatchers("/api/users/me").hasAnyAuthority("ADMIN", "SUPER_ADMIN")
 
@@ -52,6 +54,10 @@ public class SecurityConfiguration {
                 .requestMatchers("/api/analytics/**").hasAuthority("ADMIN")
                 .requestMatchers("/api/menu-item-options/**").hasAuthority("ADMIN")
                 .requestMatchers("/api/menu-item-option-choices/**").hasAuthority("ADMIN")
+                .requestMatchers("/api/special-menus/my-restaurant").hasAuthority("ADMIN")
+                .requestMatchers("/api/special-menus//{menuId}/items").hasAuthority("ADMIN")
+                .requestMatchers("/api/special-menus//{menuId}").hasAuthority("ADMIN")
+                .requestMatchers("/api/special-menus/items/{itemId}").hasAuthority("ADMIN")
                 
                 // SUPER_ADMIN endpoints (for you)
                 .requestMatchers(HttpMethod.POST, "/api/restaurants").hasAuthority("SUPER_ADMIN")
