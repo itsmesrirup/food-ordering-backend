@@ -19,6 +19,7 @@ import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.Authentication;
 
@@ -40,7 +41,7 @@ public class RestaurantController {
 
     @GetMapping
     public List<RestaurantResponse> getAllRestaurants() {
-        return restaurantRepository.findAll()
+        return restaurantRepository.findByActiveTrue()
                 .stream()
                 .map(RestaurantResponse::new)
                 .collect(Collectors.toList());
@@ -48,14 +49,14 @@ public class RestaurantController {
 
     @GetMapping("/{id}")
     public ResponseEntity<RestaurantResponse> getRestaurantById(@PathVariable Long id) {
-        return restaurantRepository.findById(id)
+        return restaurantRepository.findByIdAndActiveTrue(id)
                 .map(restaurant -> ResponseEntity.ok(new RestaurantResponse(restaurant)))
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/{restaurantId}/menu")
     public List<CategorizedMenuResponse> getRestaurantMenu(@PathVariable Long restaurantId) {
-        Restaurant restaurant = restaurantRepository.findById(restaurantId)
+        Restaurant restaurant = restaurantRepository.findByIdAndActiveTrue(restaurantId)
                 .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found with id: " + restaurantId));
 
         // Fetch only the top-level categories for this restaurant
@@ -77,7 +78,7 @@ public class RestaurantController {
             @PathVariable Long restaurantId,
             @RequestBody MenuItemRequest request) {
 
-        Restaurant restaurant = restaurantRepository.findById(restaurantId)
+        Restaurant restaurant = restaurantRepository.findByIdAndActiveTrue(restaurantId)
                 .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
 
         MenuItem menuItem = new MenuItem();
@@ -137,10 +138,41 @@ public class RestaurantController {
     }
 
     @DeleteMapping("/{id}")
+    @Transactional
     public ResponseEntity<Void> deleteRestaurant(@PathVariable Long id) {
-        return restaurantRepository.findById(id).map(restaurant -> {
-            restaurantRepository.delete(restaurant);
-            return ResponseEntity.noContent().<Void>build();
-        }).orElse(ResponseEntity.notFound().build());
+        // We need a special repository method to find even inactive restaurants
+        Restaurant restaurant = restaurantRepository.findEvenInactiveById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
+        
+        restaurant.setActive(false);
+        restaurantRepository.save(restaurant);
+        
+        // Optional: Also deactivate all associated admin user accounts
+        // userRepository.deactivateUsersByRestaurantId(id);
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/all")
+    public List<RestaurantResponse> getAllRestaurantsForSuperAdmin() {
+        // We need a new repository method that ignores the @Where clause
+        return restaurantRepository.findAllEvenInactive().stream()
+            .map(RestaurantResponse::new)
+            .collect(Collectors.toList());
+    }
+
+    @PatchMapping("/{id}/reactivate")
+    @Transactional
+    public ResponseEntity<Void> reactivateRestaurant(@PathVariable Long id) {
+        // We use our special method to find the restaurant even if it's inactive
+        Restaurant restaurant = restaurantRepository.findEvenInactiveById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
+        
+        restaurant.setActive(true);
+        restaurantRepository.save(restaurant);
+        
+        // You could also add logic here to reactivate its users if they were deactivated.
+
+        return ResponseEntity.noContent().build();
     }
 }

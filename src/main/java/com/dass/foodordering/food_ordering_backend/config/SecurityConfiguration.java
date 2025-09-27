@@ -61,6 +61,8 @@ public class SecurityConfiguration {
                 
                 // SUPER_ADMIN endpoints (for you)
                 .requestMatchers(HttpMethod.POST, "/api/restaurants").hasAuthority("SUPER_ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/restaurants/all").hasAuthority("SUPER_ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/restaurants/{id}/reactivate").hasAuthority("SUPER_ADMIN")
                 // We would add more super admin routes here, e.g., GET /api/users, GET /api/restaurants/all-admin-list
                 
                 // Default deny

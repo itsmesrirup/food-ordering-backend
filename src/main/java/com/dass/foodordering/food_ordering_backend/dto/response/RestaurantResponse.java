@@ -1,6 +1,8 @@
 package com.dass.foodordering.food_ordering_backend.dto.response;
 
 import com.dass.foodordering.food_ordering_backend.model.Restaurant;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.Data;
 
 import java.util.List;
@@ -24,6 +26,8 @@ public class RestaurantResponse {
     private String logoUrl;
     private String heroImageUrl;
 
+    private boolean active;
+
     
     public RestaurantResponse(Restaurant restaurant) {
         this.id = restaurant.getId();
@@ -45,6 +49,6 @@ public class RestaurantResponse {
         this.useDarkTheme = restaurant.isUseDarkTheme();
         this.logoUrl = restaurant.getLogoUrl();
         this.heroImageUrl = restaurant.getHeroImageUrl();
-        
+        this.active = restaurant.isActive();
     }
 }
