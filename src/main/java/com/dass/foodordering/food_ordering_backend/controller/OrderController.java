@@ -30,6 +30,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -223,14 +225,36 @@ public class OrderController {
         return new OrderResponse(updatedOrder);
     }
 
-    @GetMapping("/byRestaurant/{restaurantId}")
-    public List<OrderResponse> getOrdersByRestaurant(@PathVariable Long restaurantId) {
-        // You might want to add a check to ensure the restaurant exists
-        Restaurant restaurant = restaurantRepository.findById(restaurantId)
-                .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
+    // --- PROTECTED ADMIN ENDPOINTS ---
+
+    @GetMapping("/by-restaurant/kitchen")
+    public List<OrderResponse> getKitchenOrders() {
+        User currentUser = getCurrentUser();
+        Long restaurantId = currentUser.getRestaurant().getId();
+
+        // The list of statuses is now fixed, not configurable.
+        List<OrderStatus> statusesToFetch = List.of(OrderStatus.CONFIRMED, OrderStatus.PREPARING);
         
-        return orderRepository.findByRestaurantId(restaurantId).stream() // We need to create this method
+        List<Order> orders = orderRepository.findByRestaurantIdAndStatusIn(restaurantId, statusesToFetch);
+        orders.sort(Comparator.comparing(Order::getId)); // Oldest first for the kitchen
+
+        return orders.stream().map(OrderResponse::new).collect(Collectors.toList());
+    }
+
+    // This is for the main Order Dashboard (history/management)
+    @GetMapping("/by-restaurant")
+    public List<OrderResponse> getOrdersByRestaurant() {
+        User currentUser = getCurrentUser();
+        Long restaurantId = currentUser.getRestaurant().getId();
+        // This findByRestaurantId method should order by ID desc
+        return orderRepository.findByRestaurantIdOrderByIdDesc(restaurantId).stream()
                 .map(OrderResponse::new)
                 .collect(Collectors.toList());
+    }
+
+    // --- HELPER METHODS ---
+    private User getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return (User) authentication.getPrincipal();
     }
 }

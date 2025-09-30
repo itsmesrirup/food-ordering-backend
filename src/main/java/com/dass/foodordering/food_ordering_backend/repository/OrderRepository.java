@@ -3,6 +3,7 @@ package com.dass.foodordering.food_ordering_backend.repository;
 import com.dass.foodordering.food_ordering_backend.dto.response.AnalyticsSummaryResponse;
 import com.dass.foodordering.food_ordering_backend.dto.response.SalesByPeriodResponse;
 import com.dass.foodordering.food_ordering_backend.model.Order;
+import com.dass.foodordering.food_ordering_backend.model.OrderStatus;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -43,4 +44,8 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
                    "ORDER BY hour ASC",
            nativeQuery = true)
     List<OrdersByHourResponseProjection> findOrdersByHourNative(@Param("restaurantId") Long restaurantId);
+
+    List<Order> findByRestaurantIdOrderByIdDesc(Long restaurantId);
+
+    List<Order> findByRestaurantIdAndStatusIn(Long restaurantId, List<OrderStatus> statuses);
 }

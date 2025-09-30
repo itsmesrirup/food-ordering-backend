@@ -4,6 +4,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod; // <-- CRITICAL IMPORT
+import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -27,52 +30,61 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable())
-                // ✅ THIS IS THE CRITICAL CHANGE. We are now explicitly telling
-                // Spring Security to use the configuration from our CorsConfigurationSource bean.
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .authorizeHttpRequests(auth -> auth
-                    // Public endpoints
-                .requestMatchers("/actuator/health", "/api/auth/**").permitAll() 
-                .requestMatchers(HttpMethod.GET, "/api/restaurants", "/api/restaurants/**").permitAll()
+            .csrf(csrf -> csrf.disable())
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .authorizeHttpRequests(auth -> auth
+                // --- PUBLIC Endpoints ---
+                .requestMatchers("/actuator/health", "/api/auth/**", "/api/customer/auth/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/restaurants/**", "/api/special-menus/restaurant/**", "/api/analytics/recommendations/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/customers/find-or-create", "/api/orders", "/api/reservations").permitAll()
-                // Allow public access to the AI recommendations
-                .requestMatchers(HttpMethod.GET, "/api/analytics/recommendations/**").permitAll()
-                .requestMatchers("/api/special-menus/restaurant/{restaurantId}/active").permitAll()
-                
-                // Allow both ADMIN and SUPER_ADMIN to get their own profile
-                .requestMatchers("/api/users/me").hasAnyAuthority("ADMIN", "SUPER_ADMIN")
 
-                // ADMIN endpoints (for restaurant owners)
-                .requestMatchers(HttpMethod.PUT, "/api/restaurants/{id}").hasAuthority("ADMIN")
-                .requestMatchers("/api/reservations/by-restaurant", "/api/reservations/{id}/status").hasAuthority("ADMIN")
-                .requestMatchers("/api/menu-items/**").hasAuthority("ADMIN")
-                .requestMatchers("/api/orders/{id}/**").hasAuthority("ADMIN") // For status updates, etc.
-                .requestMatchers("/api/users/me").hasAuthority("ADMIN") // Getting their own profile
-                .requestMatchers("/api/categories/**").hasAuthority("ADMIN")
-                .requestMatchers(HttpMethod.PATCH, "/api/menu-items/{id}/availability").hasAuthority("ADMIN")
-                .requestMatchers("/api/analytics/**").hasAuthority("ADMIN")
-                .requestMatchers("/api/menu-item-options/**").hasAuthority("ADMIN")
-                .requestMatchers("/api/menu-item-option-choices/**").hasAuthority("ADMIN")
-                .requestMatchers("/api/special-menus/my-restaurant").hasAuthority("ADMIN")
-                .requestMatchers("/api/special-menus//{menuId}/items").hasAuthority("ADMIN")
-                .requestMatchers("/api/special-menus//{menuId}").hasAuthority("ADMIN")
-                .requestMatchers("/api/special-menus/items/{itemId}").hasAuthority("ADMIN")
+                // --- USER (Customer) Endpoints ---
+                .requestMatchers("/api/customers/me/**").hasRole("USER")
+
+                // --- KITCHEN_STAFF Endpoints ---
+                .requestMatchers("/api/orders/by-restaurant/kitchen").hasRole("KITCHEN_STAFF")
+                .requestMatchers(HttpMethod.PATCH, "/api/orders/{id}/status").hasRole("KITCHEN_STAFF")
                 
-                // SUPER_ADMIN endpoints (for you)
-                .requestMatchers(HttpMethod.POST, "/api/restaurants").hasAuthority("SUPER_ADMIN")
-                .requestMatchers(HttpMethod.POST, "/api/restaurants/all").hasAuthority("SUPER_ADMIN")
-                .requestMatchers(HttpMethod.POST, "/api/restaurants/{id}/reactivate").hasAuthority("SUPER_ADMIN")
-                // We would add more super admin routes here, e.g., GET /api/users, GET /api/restaurants/all-admin-list
+                // --- ADMIN Endpoints ---
+                // Because of Role Hierarchy, ADMIN can also access KITCHEN_STAFF endpoints.
+                .requestMatchers("/api/analytics/**", "/api/categories/**", "/api/users/my-staff/**").hasRole("ADMIN")
+                .requestMatchers("/api/menu-items/**", "/api/menu-item-options/**", "/api/menu-item-option-choices/**").hasRole("ADMIN")
+                .requestMatchers("/api/special-menus/**").hasRole("ADMIN") // General rule for all special menu management
+                .requestMatchers(HttpMethod.PUT, "/api/restaurants/{id}").hasRole("ADMIN")
+                .requestMatchers("/api/orders/**").hasRole("ADMIN") // General rule for any other order management
+
+                // --- SUPER_ADMIN Endpoints ---
+                // SUPER_ADMIN can access everything above, plus these.
+                .requestMatchers("/api/restaurants/all").hasRole("SUPER_ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/restaurants").hasRole("SUPER_ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/restaurants/{id}").hasRole("SUPER_ADMIN")
+                .requestMatchers(HttpMethod.PATCH, "/api/restaurants/{id}/reactivate").hasRole("SUPER_ADMIN")
                 
-                // Default deny
+                // This rule is for both ADMIN and SUPER_ADMIN because KITCHEN_STAFF doesn't have a /me endpoint
+                .requestMatchers("/api/users/me").hasAnyRole("ADMIN", "SUPER_ADMIN","KITCHEN_STAFF")
+
+                // --- Default Deny ---
                 .anyRequest().authenticated()
-                )
+            )
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    @Bean
+    public static RoleHierarchy roleHierarchy() {
+        RoleHierarchyImpl hierarchy = new RoleHierarchyImpl();
+        hierarchy.setHierarchy("ROLE_SUPER_ADMIN > ROLE_ADMIN\nROLE_ADMIN > ROLE_KITCHEN_STAFF\nROLE_KITCHEN_STAFF > ROLE_USER");
+        return hierarchy;
+    }
+
+    @Bean
+    public static DefaultMethodSecurityExpressionHandler methodSecurityExpressionHandler(RoleHierarchy roleHierarchy) {
+        DefaultMethodSecurityExpressionHandler expressionHandler = new DefaultMethodSecurityExpressionHandler();
+        expressionHandler.setRoleHierarchy(roleHierarchy);
+        return expressionHandler;
     }
     
     // Make sure your CorsFilter bean is still here and configured correctly
