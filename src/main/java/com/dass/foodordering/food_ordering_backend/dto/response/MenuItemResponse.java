@@ -20,6 +20,7 @@ public class MenuItemResponse {
     private String categoryName;
     private boolean bundle;
     private List<MenuItemOption> options;
+    private String imageUrl;
 
     public MenuItemResponse(MenuItem menuItem) {
         this.id = menuItem.getId();
@@ -28,6 +29,7 @@ public class MenuItemResponse {
         this.description = menuItem.getDescription();
         this.available = menuItem.isAvailable();
         this.bundle = menuItem.isBundle();
+        this.imageUrl = menuItem.getImageUrl();
         if (menuItem.getRestaurant() != null) {
             this.restaurantId = menuItem.getRestaurant().getId();
         } else {
@@ -41,6 +43,9 @@ public class MenuItemResponse {
     }
 
     // Getters
+    public String getImageUrl() {
+        return imageUrl;
+    }
     public Long getId() { return id; }
     public String getName() { return name; }
     public Double getPrice() { return price; }

@@ -17,6 +17,11 @@ public class MenuItem {
     private String description;
     private double price;
 
+    // Add a column to store the URL of the item's image.
+    // It can be nullable because not every item might have an image.
+    @Column(name = "image_url")
+    private String imageUrl;
+
     // Optional link back to the restaurant that offers this item
     @ManyToOne
     @JoinColumn(name = "restaurant_id")
@@ -67,6 +72,16 @@ public class MenuItem {
     private List<MenuItemOption> options = new ArrayList<>();
 
     // --- getters/setters ---
+
+// --- ADDED: Getter and Setter for imageUrl ---
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
