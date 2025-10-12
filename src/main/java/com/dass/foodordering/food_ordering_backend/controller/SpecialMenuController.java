@@ -1,6 +1,7 @@
 package com.dass.foodordering.food_ordering_backend.controller;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
@@ -24,6 +25,8 @@ import com.dass.foodordering.food_ordering_backend.model.SpecialMenuItem;
 import com.dass.foodordering.food_ordering_backend.model.User;
 import com.dass.foodordering.food_ordering_backend.repository.SpecialMenuItemRepository;
 import com.dass.foodordering.food_ordering_backend.repository.SpecialMenuRepository;
+import org.springframework.transaction.annotation.Transactional;
+import com.dass.foodordering.food_ordering_backend.dto.request.CloneSpecialMenuRequest;
 
 import lombok.Data;
 
@@ -96,6 +99,41 @@ public class SpecialMenuController {
         newItem.setName(request.getName());
         newItem.setDescription(request.getDescription());
         return specialMenuItemRepository.save(newItem);
+    }
+
+    @PostMapping("/{id}/clone")
+    @Transactional // This ensures the whole operation succeeds or fails together.
+    public SpecialMenu cloneSpecialMenu(@PathVariable Long id, @RequestBody CloneSpecialMenuRequest request) {
+        // 1. Find the original menu and verify ownership
+        SpecialMenu originalMenu = findMenuAndVerifyOwnership(id);
+        User currentUser = getCurrentUser();
+
+        // 2. Create the new menu "shell"
+        SpecialMenu newMenu = new SpecialMenu();
+        newMenu.setRestaurant(currentUser.getRestaurant());
+        newMenu.setTitle(request.getTitle());
+        newMenu.setStartDate(request.getStartDate());
+        newMenu.setEndDate(request.getEndDate());
+        newMenu.setActive(true); // Cloned menus default to active
+
+        SpecialMenu savedNewMenu = specialMenuRepository.save(newMenu);
+
+        // 3. Create copies of all items from the original menu
+        List<SpecialMenuItem> newItems = new ArrayList<>();
+        for (SpecialMenuItem originalItem : originalMenu.getItems()) {
+            SpecialMenuItem newItem = new SpecialMenuItem();
+            newItem.setDayTitle(originalItem.getDayTitle());
+            newItem.setName(originalItem.getName());
+            newItem.setDescription(originalItem.getDescription());
+            newItem.setSpecialMenu(savedNewMenu); // Link the new item to the new menu
+            newItems.add(newItem);
+        }
+
+        // 4. Save all the new items in one batch
+        specialMenuItemRepository.saveAll(newItems);
+
+        // Return the complete new menu. Spring Data JPA is smart enough to know it contains the items.
+        return savedNewMenu;
     }
 
     @PutMapping("/{menuId}")
