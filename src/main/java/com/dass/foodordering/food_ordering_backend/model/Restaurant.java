@@ -55,6 +55,12 @@ public class Restaurant {
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SpecialMenu> specialMenus = new ArrayList<>();
 
+    // --- Field to store the restaurant's subscription plan ---
+    // Defaults all new restaurants to the BASIC plan.
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, columnDefinition = "VARCHAR(255) DEFAULT 'BASIC'")
+    private SubscriptionPlan plan = SubscriptionPlan.BASIC;
+
     // The manual getters/setters for menuItems are no longer needed
     // because the @Data annotation from Lombok generates them for you.
 }

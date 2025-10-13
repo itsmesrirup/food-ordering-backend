@@ -2,6 +2,8 @@ package com.dass.foodordering.food_ordering_backend.dto.response;
 
 import com.dass.foodordering.food_ordering_backend.model.Restaurant;
 import lombok.Data;
+import com.dass.foodordering.food_ordering_backend.model.SubscriptionPlan;
+import java.util.Set;
 
 @Data
 public class RestaurantSettingsResponse {
@@ -15,8 +17,10 @@ public class RestaurantSettingsResponse {
     private boolean useDarkTheme;
     private String logoUrl;
     private String heroImageUrl;
+    private SubscriptionPlan plan;
+    private Set<String> availableFeatures;
 
-    public RestaurantSettingsResponse(Restaurant restaurant) {
+    public RestaurantSettingsResponse(Restaurant restaurant, Set<String> availableFeatures) {
         this.id = restaurant.getId();
         this.name = restaurant.getName();
         this.address = restaurant.getAddress();
@@ -27,5 +31,7 @@ public class RestaurantSettingsResponse {
         this.useDarkTheme = restaurant.isUseDarkTheme();
         this.logoUrl = restaurant.getLogoUrl();
         this.heroImageUrl = restaurant.getHeroImageUrl();
+        this.plan = restaurant.getPlan();
+        this.availableFeatures = availableFeatures;
     }
 }

@@ -8,11 +8,13 @@ import com.dass.foodordering.food_ordering_backend.dto.response.RestaurantSettin
 import com.dass.foodordering.food_ordering_backend.exception.ResourceNotFoundException;
 import com.dass.foodordering.food_ordering_backend.model.MenuItem;
 import com.dass.foodordering.food_ordering_backend.model.Restaurant;
+import com.dass.foodordering.food_ordering_backend.model.SubscriptionPlan;
 import com.dass.foodordering.food_ordering_backend.model.User;
 import com.dass.foodordering.food_ordering_backend.repository.MenuItemRepository;
 import com.dass.foodordering.food_ordering_backend.repository.RestaurantRepository;
 import com.dass.foodordering.food_ordering_backend.dto.response.CategorizedMenuResponse;
 import com.dass.foodordering.food_ordering_backend.repository.CategoryRepository;
+import com.dass.foodordering.food_ordering_backend.service.FeatureService;
 
 import lombok.Data;
 
@@ -21,15 +23,20 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/restaurants")
 public class RestaurantController {
 
+    @Autowired
+    private FeatureService featureService;
+    
     @Autowired
     private RestaurantRepository restaurantRepository;
 
@@ -105,14 +112,23 @@ public class RestaurantController {
         Restaurant restaurantToUpdate = restaurantRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found with id: " + id));
         
+        // --- Only update settings if the feature is available for their plan ---
+        SubscriptionPlan plan = restaurantToUpdate.getPlan();
+        
         restaurantToUpdate.setName(restaurantDetails.getName());
         restaurantToUpdate.setAddress(restaurantDetails.getAddress());
         restaurantToUpdate.setEmail(restaurantDetails.getEmail()); // Set the email
         
         // Update feature flags
-        restaurantToUpdate.setReservationsEnabled(restaurantDetails.isReservationsEnabled());
-        restaurantToUpdate.setQrCodeOrderingEnabled(restaurantDetails.isQrCodeOrderingEnabled());
-        restaurantToUpdate.setRecommendationsEnabled(restaurantDetails.isRecommendationsEnabled());
+        if (featureService.isFeatureAvailable(plan, "RESERVATIONS")) {
+            restaurantToUpdate.setReservationsEnabled(restaurantDetails.isReservationsEnabled());
+        }
+        if (featureService.isFeatureAvailable(plan, "QR_ORDERING")) {
+            restaurantToUpdate.setQrCodeOrderingEnabled(restaurantDetails.isQrCodeOrderingEnabled());
+        }
+        if (featureService.isFeatureAvailable(plan, "RECOMMENDATIONS")) {
+            restaurantToUpdate.setRecommendationsEnabled(restaurantDetails.isRecommendationsEnabled());
+        }
 
         //Update the theme flags
         restaurantToUpdate.setUseDarkTheme(restaurantDetails.isUseDarkTheme());
@@ -134,7 +150,9 @@ public class RestaurantController {
             throw new ResourceNotFoundException("No restaurant associated with this user.");
         }
         
-        return ResponseEntity.ok(new RestaurantSettingsResponse(myRestaurant));
+        Set<String> availableFeatures = featureService.getFeaturesForPlan(myRestaurant.getPlan());
+        
+        return ResponseEntity.ok(new RestaurantSettingsResponse(myRestaurant, availableFeatures));
     }
 
     @DeleteMapping("/{id}")
@@ -173,6 +191,22 @@ public class RestaurantController {
         
         // You could also add logic here to reactivate its users if they were deactivated.
 
+        return ResponseEntity.noContent().build();
+    }
+
+    // --- New endpoint for Super Admin to change a restaurant's plan ---
+    @Data public static class UpdatePlanRequest { private SubscriptionPlan plan; }
+
+    @PatchMapping("/{id}/plan")
+    // Add security check to ensure only SUPER_ADMIN can call this
+    @PreAuthorize("hasRole('SUPER_ADMIN')") 
+    public ResponseEntity<Void> updateRestaurantPlan(@PathVariable Long id, @RequestBody UpdatePlanRequest request) {
+        Restaurant restaurant = restaurantRepository.findEvenInactiveById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
+        
+        restaurant.setPlan(request.getPlan());
+        restaurantRepository.save(restaurant);
+        
         return ResponseEntity.noContent().build();
     }
 }
