@@ -1,6 +1,8 @@
 package com.dass.foodordering.food_ordering_backend.model;
 
 import jakarta.persistence.*;
+
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
@@ -60,6 +62,33 @@ public class Restaurant {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, columnDefinition = "VARCHAR(255) DEFAULT 'BASIC'")
     private SubscriptionPlan plan = SubscriptionPlan.BASIC;
+
+    // --- ADDED: Fields for the website builder content ---
+    @Column(length = 2000) // Use length for long text fields
+    private String aboutUsText;
+    
+    private String phoneNumber;
+    
+    @Column(length = 500)
+    private String openingHours; // Storing as simple text is fine for V1
+
+    @Column(columnDefinition = "TEXT")
+    private String googleMapsUrl;
+
+    // A unique, URL-friendly identifier for the restaurant's public page
+    @Column(unique = true)
+    private String slug;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, columnDefinition = "VARCHAR(255) DEFAULT 'SUBSCRIPTION'")
+    private PaymentModel paymentModel = PaymentModel.SUBSCRIPTION;
+
+    // --- ADDED: Field to store the commission rate for this specific restaurant ---
+    @Column(precision = 5, scale = 4) // e.g., allows for 0.0500 (5%)
+    private BigDecimal commissionRate;
+
+    private String metaTitle;       // e.g., "Au Punjab | Authentic Indian Cuisine in Strasbourg"
+    private String metaDescription; // e.g., "Experience the rich flavors of Northern India at Au Punjab..."
 
     // The manual getters/setters for menuItems are no longer needed
     // because the @Data annotation from Lombok generates them for you.

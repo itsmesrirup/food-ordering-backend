@@ -18,4 +18,13 @@ public class UpdateRestaurantRequest {
     private boolean useDarkTheme;
     private String logoUrl;   
     private String heroImageUrl; // URL to a large background image
+
+    private String aboutUsText;
+    private String phoneNumber;
+    private String openingHours;
+    private String googleMapsUrl;
+    private String slug;
+
+    private String metaTitle;
+    private String metaDescription;
 }

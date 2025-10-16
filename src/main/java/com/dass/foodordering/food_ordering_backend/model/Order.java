@@ -12,6 +12,21 @@ import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 @Entity
 @Table(name = "orders") // "order" is reserved in SQL
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
+@NamedEntityGraph(
+    name = "Order.withItemsAndCustomer",
+    attributeNodes = {
+        @NamedAttributeNode("customer"),
+        @NamedAttributeNode(value = "orderItems", subgraph = "orderItems.withMenuItem")
+    },
+    subgraphs = {
+        @NamedSubgraph(
+            name = "orderItems.withMenuItem",
+            attributeNodes = {
+                @NamedAttributeNode("menuItem")
+            }
+        )
+    }
+)
 public class Order {
 
     @Id

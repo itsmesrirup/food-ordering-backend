@@ -8,6 +8,7 @@ import com.dass.foodordering.food_ordering_backend.model.OrderStatus;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -45,6 +46,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
            nativeQuery = true)
     List<OrdersByHourResponseProjection> findOrdersByHourNative(@Param("restaurantId") Long restaurantId);
 
+    @EntityGraph(value = "Order.withItemsAndCustomer")
     List<Order> findByRestaurantIdOrderByIdDesc(Long restaurantId);
 
     List<Order> findByRestaurantIdAndStatusIn(Long restaurantId, List<OrderStatus> statuses);

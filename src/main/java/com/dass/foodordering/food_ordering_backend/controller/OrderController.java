@@ -5,20 +5,22 @@ import com.dass.foodordering.food_ordering_backend.dto.request.OrderRequest;
 import com.dass.foodordering.food_ordering_backend.dto.response.OrderItemResponse;
 import com.dass.foodordering.food_ordering_backend.dto.response.OrderResponse;
 import com.dass.foodordering.food_ordering_backend.exception.ResourceNotFoundException;
+import com.dass.foodordering.food_ordering_backend.model.CommissionLedger;
 import com.dass.foodordering.food_ordering_backend.model.Customer;
 import com.dass.foodordering.food_ordering_backend.model.MenuItem;
 import com.dass.foodordering.food_ordering_backend.model.Order;
 import com.dass.foodordering.food_ordering_backend.model.OrderItem;
 import com.dass.foodordering.food_ordering_backend.model.OrderStatus;
+import com.dass.foodordering.food_ordering_backend.model.PaymentModel;
 import com.dass.foodordering.food_ordering_backend.model.Restaurant;
 import com.dass.foodordering.food_ordering_backend.model.User;
+import com.dass.foodordering.food_ordering_backend.repository.CommissionLedgerRepository;
 import com.dass.foodordering.food_ordering_backend.repository.CustomerRepository;
 import com.dass.foodordering.food_ordering_backend.repository.MenuItemRepository;
 import com.dass.foodordering.food_ordering_backend.repository.OrderRepository;
 import com.dass.foodordering.food_ordering_backend.repository.RestaurantRepository;
 import com.dass.foodordering.food_ordering_backend.service.EmailService;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.dass.foodordering.food_ordering_backend.exception.BadRequestException;
 
 import lombok.Data;
@@ -29,8 +31,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -49,7 +52,7 @@ public class OrderController {
     private CustomerRepository customerRepository;
 
     @Autowired
-    private RestaurantRepository restaurantRepository;
+    private CommissionLedgerRepository commissionLedgerRepository;
 
     @Autowired
     private EmailService emailService;
@@ -136,6 +139,31 @@ public class OrderController {
         order.setTotalPrice(totalPrice);
 
         Order savedOrder = orderRepository.save(order);
+
+        // --- ADDED: Commission Calculation Logic ---
+        Restaurant savedRestaurant = savedOrder.getRestaurant();
+        
+        // Check if the restaurant is on a commission-based plan
+        if (savedRestaurant.getPaymentModel() == PaymentModel.COMMISSION && savedRestaurant.getCommissionRate() != null) {
+            BigDecimal orderTotal = BigDecimal.valueOf(savedOrder.getTotalPrice());
+            BigDecimal commissionRate = savedRestaurant.getCommissionRate();
+            
+            // Calculate commission: total * rate. Scale to 2 decimal places.
+            BigDecimal commissionAmount = orderTotal.multiply(commissionRate)
+                                                    .setScale(2, RoundingMode.HALF_UP);
+
+            // Create and save a ledger entry for this transaction
+            CommissionLedger ledgerEntry = new CommissionLedger();
+            ledgerEntry.setRestaurant(savedRestaurant);
+            ledgerEntry.setOrder(savedOrder);
+            ledgerEntry.setOrderTotal(orderTotal);
+            ledgerEntry.setCommissionRate(commissionRate);
+            ledgerEntry.setCommissionAmount(commissionAmount);
+            ledgerEntry.setTransactionDate(LocalDateTime.now());
+            
+            commissionLedgerRepository.save(ledgerEntry);
+        }
+
         emailService.sendNewOrderNotification(savedOrder);
         return new OrderResponse(savedOrder);
     }

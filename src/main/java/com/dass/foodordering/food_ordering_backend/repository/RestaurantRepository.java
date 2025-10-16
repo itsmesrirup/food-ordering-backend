@@ -17,6 +17,10 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
     // This is for SUPER ADMIN use. It finds ALL restaurants.
     @Query("SELECT r FROM Restaurant r WHERE r.id = :id")
     Optional<Restaurant> findEvenInactiveById(@Param("id") Long id);
+    
     @Query("SELECT r FROM Restaurant r") // This custom query bypasses the @Where clause
     List<Restaurant> findAllEvenInactive(); 
+
+    // --- Method to find a public, active restaurant by its URL slug ---
+    Optional<Restaurant> findBySlugAndActiveTrue(String slug);
 }

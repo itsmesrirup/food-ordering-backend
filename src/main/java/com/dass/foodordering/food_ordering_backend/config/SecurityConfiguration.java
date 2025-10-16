@@ -36,7 +36,7 @@ public class SecurityConfiguration {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(auth -> auth
                 // --- PUBLIC Endpoints ---
-                .requestMatchers("/actuator/health", "/api/auth/**", "/api/customer/auth/**").permitAll()
+                .requestMatchers("/actuator/health", "/api/auth/**", "/api/customer/auth/**", "/api/public/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/restaurants/**", "/api/special-menus/restaurant/**", "/api/analytics/recommendations/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/customers/find-or-create", "/api/orders", "/api/reservations").permitAll()
 
@@ -54,6 +54,7 @@ public class SecurityConfiguration {
                 .requestMatchers("/api/special-menus/**").hasRole("ADMIN") // General rule for all special menu management
                 .requestMatchers(HttpMethod.PUT, "/api/restaurants/{id}").hasRole("ADMIN")
                 .requestMatchers("/api/orders/**").hasRole("ADMIN") // General rule for any other order management
+                .requestMatchers("/api/commissions/my-restaurant").hasRole("ADMIN")
 
                 // --- SUPER_ADMIN Endpoints ---
                 // SUPER_ADMIN can access everything above, plus these.

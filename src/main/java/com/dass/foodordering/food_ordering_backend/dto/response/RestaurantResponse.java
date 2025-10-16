@@ -1,11 +1,13 @@
 package com.dass.foodordering.food_ordering_backend.dto.response;
 
+import com.dass.foodordering.food_ordering_backend.model.PaymentModel;
 import com.dass.foodordering.food_ordering_backend.model.Restaurant;
 import com.dass.foodordering.food_ordering_backend.model.SubscriptionPlan;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -30,6 +32,18 @@ public class RestaurantResponse {
     private boolean active;
     private SubscriptionPlan plan;
 
+    private String aboutUsText;
+    private String phoneNumber;
+    private String openingHours;
+    private String googleMapsUrl;
+    private String slug;
+
+    private PaymentModel paymentModel;
+    private BigDecimal commissionRate;
+
+    private String metaTitle;
+    private String metaDescription;
+
     
     public RestaurantResponse(Restaurant restaurant) {
         this.id = restaurant.getId();
@@ -53,5 +67,16 @@ public class RestaurantResponse {
         this.heroImageUrl = restaurant.getHeroImageUrl();
         this.active = restaurant.isActive();
         this.plan = restaurant.getPlan();
+
+        this.aboutUsText = restaurant.getAboutUsText();
+        this.phoneNumber = restaurant.getPhoneNumber();
+        this.openingHours = restaurant.getOpeningHours();
+        this.googleMapsUrl = restaurant.getGoogleMapsUrl();
+        this.slug = restaurant.getSlug();
+
+        this.paymentModel = restaurant.getPaymentModel();
+        this.commissionRate = restaurant.getCommissionRate();
+        this.metaTitle = restaurant.getMetaTitle();
+        this.metaDescription = restaurant.getMetaDescription();
     }
 }

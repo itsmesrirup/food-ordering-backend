@@ -5,8 +5,10 @@ import com.dass.foodordering.food_ordering_backend.dto.request.UpdateRestaurantR
 import com.dass.foodordering.food_ordering_backend.dto.response.MenuItemResponse;
 import com.dass.foodordering.food_ordering_backend.dto.response.RestaurantResponse;
 import com.dass.foodordering.food_ordering_backend.dto.response.RestaurantSettingsResponse;
+import com.dass.foodordering.food_ordering_backend.dto.response.RestaurantSummaryResponse;
 import com.dass.foodordering.food_ordering_backend.exception.ResourceNotFoundException;
 import com.dass.foodordering.food_ordering_backend.model.MenuItem;
+import com.dass.foodordering.food_ordering_backend.model.PaymentModel;
 import com.dass.foodordering.food_ordering_backend.model.Restaurant;
 import com.dass.foodordering.food_ordering_backend.model.SubscriptionPlan;
 import com.dass.foodordering.food_ordering_backend.model.User;
@@ -26,6 +28,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -112,21 +115,19 @@ public class RestaurantController {
         Restaurant restaurantToUpdate = restaurantRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found with id: " + id));
         
-        // --- Only update settings if the feature is available for their plan ---
-        SubscriptionPlan plan = restaurantToUpdate.getPlan();
         
         restaurantToUpdate.setName(restaurantDetails.getName());
         restaurantToUpdate.setAddress(restaurantDetails.getAddress());
         restaurantToUpdate.setEmail(restaurantDetails.getEmail()); // Set the email
         
         // Update feature flags
-        if (featureService.isFeatureAvailable(plan, "RESERVATIONS")) {
+        if (featureService.isFeatureAvailable(restaurantToUpdate, "RESERVATIONS")) {
             restaurantToUpdate.setReservationsEnabled(restaurantDetails.isReservationsEnabled());
         }
-        if (featureService.isFeatureAvailable(plan, "QR_ORDERING")) {
+        if (featureService.isFeatureAvailable(restaurantToUpdate, "QR_ORDERING")) {
             restaurantToUpdate.setQrCodeOrderingEnabled(restaurantDetails.isQrCodeOrderingEnabled());
         }
-        if (featureService.isFeatureAvailable(plan, "RECOMMENDATIONS")) {
+        if (featureService.isFeatureAvailable(restaurantToUpdate, "RECOMMENDATIONS")) {
             restaurantToUpdate.setRecommendationsEnabled(restaurantDetails.isRecommendationsEnabled());
         }
 
@@ -134,6 +135,15 @@ public class RestaurantController {
         restaurantToUpdate.setUseDarkTheme(restaurantDetails.isUseDarkTheme());
         restaurantToUpdate.setLogoUrl(restaurantDetails.getLogoUrl());
         restaurantToUpdate.setHeroImageUrl(restaurantDetails.getHeroImageUrl());
+
+        // --- Save the new website content fields ---
+        restaurantToUpdate.setAboutUsText(restaurantDetails.getAboutUsText());
+        restaurantToUpdate.setPhoneNumber(restaurantDetails.getPhoneNumber());
+        restaurantToUpdate.setOpeningHours(restaurantDetails.getOpeningHours());
+        restaurantToUpdate.setGoogleMapsUrl(restaurantDetails.getGoogleMapsUrl());
+        restaurantToUpdate.setSlug(restaurantDetails.getSlug());
+        restaurantToUpdate.setMetaTitle(restaurantDetails.getMetaTitle());
+        restaurantToUpdate.setMetaDescription(restaurantDetails.getMetaDescription());
         
         Restaurant updatedRestaurant = restaurantRepository.save(restaurantToUpdate);
         return ResponseEntity.ok(new RestaurantResponse(updatedRestaurant));
@@ -150,7 +160,7 @@ public class RestaurantController {
             throw new ResourceNotFoundException("No restaurant associated with this user.");
         }
         
-        Set<String> availableFeatures = featureService.getFeaturesForPlan(myRestaurant.getPlan());
+        Set<String> availableFeatures = featureService.getAvailableFeaturesForRestaurant(myRestaurant);
         
         return ResponseEntity.ok(new RestaurantSettingsResponse(myRestaurant, availableFeatures));
     }
@@ -172,10 +182,10 @@ public class RestaurantController {
     }
 
     @GetMapping("/all")
-    public List<RestaurantResponse> getAllRestaurantsForSuperAdmin() {
+    public List<RestaurantSummaryResponse> getAllRestaurantsForSuperAdmin() {
         // We need a new repository method that ignores the @Where clause
         return restaurantRepository.findAllEvenInactive().stream()
-            .map(RestaurantResponse::new)
+            .map(RestaurantSummaryResponse::new)
             .collect(Collectors.toList());
     }
 
@@ -204,9 +214,55 @@ public class RestaurantController {
         Restaurant restaurant = restaurantRepository.findEvenInactiveById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
         
-        restaurant.setPlan(request.getPlan());
+        SubscriptionPlan newPlan = request.getPlan();
+        restaurant.setPlan(newPlan);
+        
+        // --- ADDED: Logic to disable features on downgrade ---
+        // Get the set of features available for the new plan.
+        Set<String> newAvailableFeatures = featureService.getFeaturesForPlan(newPlan);
+
+        // If "RESERVATIONS" is no longer available, turn it off.
+        if (!newAvailableFeatures.contains("RESERVATIONS")) {
+            restaurant.setReservationsEnabled(false);
+        }
+        // If "QR_ORDERING" is no longer available, turn it off.
+        if (!newAvailableFeatures.contains("QR_ORDERING")) {
+            restaurant.setQrCodeOrderingEnabled(false);
+        }
+        // If "RECOMMENDATIONS" is no longer available, turn it off.
+        if (!newAvailableFeatures.contains("RECOMMENDATIONS")) {
+            restaurant.setRecommendationsEnabled(false);
+        }
+        // Add more checks here for future features like WEBSITE_BUILDER, etc.
+        
         restaurantRepository.save(restaurant);
         
+        return ResponseEntity.noContent().build();
+    }
+
+    // --- ADDED: Endpoint to update the Payment Model ---
+    @Data public static class UpdateModelRequest { private PaymentModel paymentModel; }
+
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    @PatchMapping("/{id}/model")
+    public ResponseEntity<Void> updateRestaurantModel(@PathVariable Long id, @RequestBody UpdateModelRequest request) {
+        Restaurant restaurant = restaurantRepository.findEvenInactiveById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
+        restaurant.setPaymentModel(request.getPaymentModel());
+        restaurantRepository.save(restaurant);
+        return ResponseEntity.noContent().build();
+    }
+    
+    // --- ADDED: Endpoint to update the Commission Rate ---
+    @Data public static class UpdateCommissionRequest { private BigDecimal commissionRate; }
+
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    @PatchMapping("/{id}/commission")
+    public ResponseEntity<Void> updateRestaurantCommission(@PathVariable Long id, @RequestBody UpdateCommissionRequest request) {
+        Restaurant restaurant = restaurantRepository.findEvenInactiveById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
+        restaurant.setCommissionRate(request.getCommissionRate());
+        restaurantRepository.save(restaurant);
         return ResponseEntity.noContent().build();
     }
 }
