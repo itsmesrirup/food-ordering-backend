@@ -5,13 +5,16 @@ import com.dass.foodordering.food_ordering_backend.dto.response.MenuItemResponse
 import com.dass.foodordering.food_ordering_backend.dto.response.OrdersByHourResponse;
 import com.dass.foodordering.food_ordering_backend.dto.response.SalesByPeriodResponse;
 import com.dass.foodordering.food_ordering_backend.dto.response.TopSellingItemResponse;
+import com.dass.foodordering.food_ordering_backend.model.Restaurant;
 import com.dass.foodordering.food_ordering_backend.model.User;
 import com.dass.foodordering.food_ordering_backend.repository.MenuItemRepository;
 import com.dass.foodordering.food_ordering_backend.repository.OrderItemRepository;
 import com.dass.foodordering.food_ordering_backend.repository.OrderRepository;
 import com.dass.foodordering.food_ordering_backend.repository.OrdersByHourResponseProjection;
+import com.dass.foodordering.food_ordering_backend.service.FeatureService;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,33 +40,47 @@ public class AnalyticsController {
     @Autowired
     private MenuItemRepository menuItemRepository;
 
+    @Autowired private FeatureService featureService;
+
+    // --- A reusable helper method to get the user and verify their plan ---
+    private Restaurant checkAnalyticsAccessAndGetRestaurant() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = (User) authentication.getPrincipal();
+        Restaurant restaurant = currentUser.getRestaurant();
+        
+        // --- THIS IS THE GUARD ---
+        if (!featureService.isFeatureAvailable(restaurant, "ANALYTICS")) {
+            throw new AccessDeniedException("Access to Analytics is denied. Upgrade to the PREMIUM plan.");
+        }
+        return restaurant;
+    }
+
 
     @GetMapping("/summary")
     public AnalyticsSummaryResponse getSummary() {
-        Long restaurantId = getCurrentUserRestaurantId();
-        return orderRepository.getAnalyticsSummary(restaurantId);
+        Restaurant restaurant = checkAnalyticsAccessAndGetRestaurant();
+        return orderRepository.getAnalyticsSummary(restaurant.getId());
     }
 
     @GetMapping("/top-selling-items")
     public List<TopSellingItemResponse> getTopSellingItems() {
-        Long restaurantId = getCurrentUserRestaurantId();
-        // Here you could add pagination to get top 5, top 10 etc.
-        return orderItemRepository.findTopSellingItems(restaurantId);
+        Restaurant restaurant = checkAnalyticsAccessAndGetRestaurant();
+        return orderItemRepository.findTopSellingItems(restaurant.getId());
     }
 
     @GetMapping("/sales-over-time")
     public List<SalesByPeriodResponse> getSalesOverTime() {
-        Long restaurantId = getCurrentUserRestaurantId();
+        Restaurant restaurant = checkAnalyticsAccessAndGetRestaurant();
         LocalDateTime startDate = LocalDateTime.now().minusDays(30);
-        return orderRepository.findSalesByDay(restaurantId, startDate);
+        return orderRepository.findSalesByDay(restaurant.getId(), startDate);
     }
 
     @GetMapping("/orders-by-hour")
     public List<OrdersByHourResponse> getOrdersByHour() {
-        Long restaurantId = getCurrentUserRestaurantId();
+        Restaurant restaurant = checkAnalyticsAccessAndGetRestaurant();
         
         // Call the new native query method
-        List<OrdersByHourResponseProjection> results = orderRepository.findOrdersByHourNative(restaurantId);
+        List<OrdersByHourResponseProjection> results = orderRepository.findOrdersByHourNative(restaurant.getId());
         
         // Manually map the projection results to our DTO
         return results.stream()
@@ -85,11 +102,5 @@ public class AnalyticsController {
         return menuItemRepository.findAllById(recommendedIds).stream()
             .map(MenuItemResponse::new)
             .collect(Collectors.toList());
-    }
-
-    private Long getCurrentUserRestaurantId() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User currentUser = (User) authentication.getPrincipal();
-        return currentUser.getRestaurant().getId();
     }
 }

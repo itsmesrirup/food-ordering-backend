@@ -18,8 +18,8 @@ import com.dass.foodordering.food_ordering_backend.repository.CommissionLedgerRe
 import com.dass.foodordering.food_ordering_backend.repository.CustomerRepository;
 import com.dass.foodordering.food_ordering_backend.repository.MenuItemRepository;
 import com.dass.foodordering.food_ordering_backend.repository.OrderRepository;
-import com.dass.foodordering.food_ordering_backend.repository.RestaurantRepository;
 import com.dass.foodordering.food_ordering_backend.service.EmailService;
+import com.dass.foodordering.food_ordering_backend.service.FeatureService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.dass.foodordering.food_ordering_backend.exception.BadRequestException;
 
@@ -27,6 +27,7 @@ import lombok.Data;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -56,6 +57,8 @@ public class OrderController {
 
     @Autowired
     private EmailService emailService;
+
+    @Autowired private FeatureService featureService;
 
     @Data
     public static class UpdateStatusRequest {
@@ -109,6 +112,11 @@ public class OrderController {
         order.setOrderTime(LocalDateTime.now());
 
         if (request.getTableNumber() != null && !request.getTableNumber().isEmpty()) {
+            // Before checking the restaurant's own setting, check their plan first.
+            if (!featureService.isFeatureAvailable(restaurant, "QR_ORDERING")) {
+                throw new AccessDeniedException("QR Code Ordering is not available for this restaurant's plan.");
+            }
+
             if (!restaurant.isQrCodeOrderingEnabled()) {
                 // The feature is disabled for this restaurant, so reject the order.
                 throw new BadRequestException("QR Code ordering is not enabled for this restaurant.");

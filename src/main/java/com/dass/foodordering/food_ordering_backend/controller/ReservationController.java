@@ -2,6 +2,7 @@ package com.dass.foodordering.food_ordering_backend.controller;
 
 import com.dass.foodordering.food_ordering_backend.dto.request.ReservationRequest;
 import com.dass.foodordering.food_ordering_backend.dto.response.ReservationResponse;
+import com.dass.foodordering.food_ordering_backend.exception.BadRequestException;
 import com.dass.foodordering.food_ordering_backend.exception.ResourceNotFoundException;
 import com.dass.foodordering.food_ordering_backend.model.Reservation;
 import com.dass.foodordering.food_ordering_backend.model.ReservationStatus;
@@ -41,6 +42,11 @@ public class ReservationController {
         Restaurant restaurant = restaurantRepository.findById(request.getRestaurantId())
                 .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
 
+        // If the feature is disabled, reject the request with a clear error message.
+        if (!restaurant.isReservationsEnabled()) {
+            throw new BadRequestException("This restaurant is not currently accepting online reservations.");
+        }
+        
         Reservation reservation = new Reservation();
         reservation.setRestaurant(restaurant);
         reservation.setCustomerName(request.getCustomerName());
