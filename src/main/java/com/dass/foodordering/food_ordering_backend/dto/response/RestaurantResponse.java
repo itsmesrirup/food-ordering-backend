@@ -44,6 +44,12 @@ public class RestaurantResponse {
     private String metaTitle;
     private String metaDescription;
 
+    private String instagramUrl;
+    private String facebookUrl;
+    private String twitterUrl;
+
+    private List<String> galleryImageUrls;
+
     
     public RestaurantResponse(Restaurant restaurant) {
         this.id = restaurant.getId();
@@ -78,5 +84,11 @@ public class RestaurantResponse {
         this.commissionRate = restaurant.getCommissionRate();
         this.metaTitle = restaurant.getMetaTitle();
         this.metaDescription = restaurant.getMetaDescription();
+
+        this.instagramUrl = restaurant.getInstagramUrl();
+        this.facebookUrl = restaurant.getFacebookUrl();
+        this.twitterUrl = restaurant.getTwitterUrl();
+
+        this.galleryImageUrls = restaurant.getGalleryImageUrls();
     }
 }

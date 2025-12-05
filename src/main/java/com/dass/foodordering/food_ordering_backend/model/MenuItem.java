@@ -5,6 +5,9 @@ import java.util.List;
 
 import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
+import org.hibernate.annotations.CreationTimestamp;
+
 @Entity
 @Table(name = "menu_item")
 public class MenuItem {
@@ -70,6 +73,10 @@ public class MenuItem {
 
     @OneToMany(mappedBy = "menuItem", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MenuItemOption> options = new ArrayList<>();
+
+    @CreationTimestamp
+    @Column(updatable = false)
+    private LocalDateTime createdAt;
 
     // --- getters/setters ---
 

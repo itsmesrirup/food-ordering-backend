@@ -6,6 +6,7 @@ import lombok.Data;
 import com.dass.foodordering.food_ordering_backend.model.SubscriptionPlan;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -35,6 +36,12 @@ public class RestaurantSettingsResponse {
     private String metaTitle;
     private String metaDescription;
 
+    private String instagramUrl;
+    private String facebookUrl;
+    private String twitterUrl;
+
+    private List<String> galleryImageUrls;
+
     public RestaurantSettingsResponse(Restaurant restaurant, Set<String> availableFeatures) {
         this.id = restaurant.getId();
         this.name = restaurant.getName();
@@ -57,5 +64,9 @@ public class RestaurantSettingsResponse {
         this.slug = restaurant.getSlug();
         this.metaTitle = restaurant.getMetaTitle();
         this.metaDescription = restaurant.getMetaDescription();
+        this.instagramUrl = restaurant.getInstagramUrl();
+        this.facebookUrl = restaurant.getFacebookUrl();
+        this.twitterUrl = restaurant.getTwitterUrl();
+        this.galleryImageUrls = restaurant.getGalleryImageUrls();
     }
 }

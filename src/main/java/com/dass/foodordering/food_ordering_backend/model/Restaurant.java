@@ -90,6 +90,16 @@ public class Restaurant {
     private String metaTitle;       // e.g., "Au Punjab | Authentic Indian Cuisine in Strasbourg"
     private String metaDescription; // e.g., "Experience the rich flavors of Northern India at Au Punjab..."
 
+    private String instagramUrl;
+    private String facebookUrl;
+    private String twitterUrl;
+
+    // --- ADDED: A list to store gallery image URLs ---
+    @ElementCollection(fetch = FetchType.EAGER) // Eager fetch is fine for a small list (e.g. < 10 images)
+    @CollectionTable(name = "restaurant_gallery_images", joinColumns = @JoinColumn(name = "restaurant_id"))
+    @Column(name = "image_url", columnDefinition = "TEXT")
+    private List<String> galleryImageUrls = new ArrayList<>();
+
     // The manual getters/setters for menuItems are no longer needed
     // because the @Data annotation from Lombok generates them for you.
 }

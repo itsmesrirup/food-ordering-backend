@@ -39,6 +39,8 @@ public class SecurityConfiguration {
                 .requestMatchers("/actuator/health", "/api/auth/**", "/api/customer/auth/**", "/api/public/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/restaurants/**", "/api/special-menus/restaurant/**", "/api/analytics/recommendations/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/customers/find-or-create", "/api/orders", "/api/reservations").permitAll()
+                // Allow customers to view their order confirmation without logging in
+                .requestMatchers(HttpMethod.GET, "/api/orders/{id}").permitAll()
 
                 // --- USER (Customer) Endpoints ---
                 .requestMatchers("/api/customers/me/**").hasRole("USER")

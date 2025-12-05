@@ -1,5 +1,7 @@
 package com.dass.foodordering.food_ordering_backend.dto.request;
 
+import java.util.List;
+
 import lombok.Data;
 
 @Data
@@ -27,4 +29,10 @@ public class UpdateRestaurantRequest {
 
     private String metaTitle;
     private String metaDescription;
+
+    private String instagramUrl;
+    private String facebookUrl;
+    private String twitterUrl;
+
+    private List<String> galleryImageUrls;
 }

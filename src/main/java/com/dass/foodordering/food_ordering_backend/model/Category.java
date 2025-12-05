@@ -8,6 +8,8 @@ import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.time.LocalDateTime;
+import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
 @Data
@@ -37,4 +39,8 @@ public class Category {
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
     @JsonIgnore
     private List<MenuItem> menuItems = new ArrayList<>();
+
+    @CreationTimestamp // Automatically sets the time when saved
+    @Column(updatable = false)
+    private LocalDateTime createdAt;
 }

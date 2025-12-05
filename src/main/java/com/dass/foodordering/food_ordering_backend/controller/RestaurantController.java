@@ -144,7 +144,11 @@ public class RestaurantController {
         restaurantToUpdate.setSlug(restaurantDetails.getSlug());
         restaurantToUpdate.setMetaTitle(restaurantDetails.getMetaTitle());
         restaurantToUpdate.setMetaDescription(restaurantDetails.getMetaDescription());
-        
+        restaurantToUpdate.setInstagramUrl(restaurantDetails.getInstagramUrl());
+        restaurantToUpdate.setFacebookUrl(restaurantDetails.getFacebookUrl());
+        restaurantToUpdate.setTwitterUrl(restaurantDetails.getTwitterUrl());
+        restaurantToUpdate.setGalleryImageUrls(restaurantDetails.getGalleryImageUrls());
+
         Restaurant updatedRestaurant = restaurantRepository.save(restaurantToUpdate);
         return ResponseEntity.ok(new RestaurantResponse(updatedRestaurant));
     }
