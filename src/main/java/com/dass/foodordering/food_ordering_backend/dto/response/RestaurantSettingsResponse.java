@@ -18,6 +18,7 @@ public class RestaurantSettingsResponse {
     private boolean reservationsEnabled;
     private boolean qrCodeOrderingEnabled;
     private boolean recommendationsEnabled;
+    private boolean websiteBuilderEnabled;
     private boolean useDarkTheme;
     private String logoUrl;
     private String heroImageUrl;
@@ -50,6 +51,7 @@ public class RestaurantSettingsResponse {
         this.reservationsEnabled = restaurant.isReservationsEnabled();
         this.qrCodeOrderingEnabled = restaurant.isQrCodeOrderingEnabled();
         this.recommendationsEnabled = restaurant.isRecommendationsEnabled();
+        this.websiteBuilderEnabled = restaurant.isWebsiteBuilderEnabled();
         this.useDarkTheme = restaurant.isUseDarkTheme();
         this.logoUrl = restaurant.getLogoUrl();
         this.heroImageUrl = restaurant.getHeroImageUrl();

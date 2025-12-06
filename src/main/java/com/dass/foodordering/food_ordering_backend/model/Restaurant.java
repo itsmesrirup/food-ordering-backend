@@ -26,8 +26,8 @@ public class Restaurant {
     private String email;
 
     // --- FEATURE FLAGS ---
-    @Column(nullable = false)
-    private boolean hasOwnUi = false;
+    @Column(name = "website_builder_enabled", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private boolean websiteBuilderEnabled = false;
     @Column(nullable = false)
     private boolean reservationsEnabled = false;
     @Column(nullable = false)

@@ -49,6 +49,8 @@ public class RestaurantController {
     @Autowired
     private CategoryRepository categoryRepository;
 
+    @Data static class UpdateFeatureRequest { private Boolean websiteBuilderEnabled; }
+
     @GetMapping
     public List<RestaurantResponse> getAllRestaurants() {
         return restaurantRepository.findByActiveTrue()
@@ -268,5 +270,18 @@ public class RestaurantController {
         restaurant.setCommissionRate(request.getCommissionRate());
         restaurantRepository.save(restaurant);
         return ResponseEntity.noContent().build();
+    }
+
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    @PatchMapping("/{id}/features")
+    public ResponseEntity<Void> updateRestaurantFeatures(@PathVariable Long id, @RequestBody UpdateFeatureRequest request) {
+        Restaurant r = restaurantRepository.findEvenInactiveById(id).orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
+        
+        if (request.getWebsiteBuilderEnabled() != null) {
+            r.setWebsiteBuilderEnabled(request.getWebsiteBuilderEnabled());
+        }
+        
+        restaurantRepository.save(r);
+        return ResponseEntity.ok().build();
     }
 }

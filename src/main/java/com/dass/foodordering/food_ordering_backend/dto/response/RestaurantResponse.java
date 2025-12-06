@@ -23,6 +23,7 @@ public class RestaurantResponse {
     private boolean reservationsEnabled;
     private boolean qrCodeOrderingEnabled;
     private boolean recommendationsEnabled;
+    private boolean websiteBuilderEnabled;
 
     // --- NEW THEME FIELDS ---
     private boolean useDarkTheme;
@@ -61,6 +62,7 @@ public class RestaurantResponse {
         this.reservationsEnabled = restaurant.isReservationsEnabled();
         this.qrCodeOrderingEnabled = restaurant.isQrCodeOrderingEnabled();
         this.recommendationsEnabled = restaurant.isRecommendationsEnabled();
+        this.websiteBuilderEnabled = restaurant.isWebsiteBuilderEnabled();
 
         // Convert MenuItem to MenuItemResponse to avoid circular dependencies
         if (restaurant.getMenuItems() != null) {
