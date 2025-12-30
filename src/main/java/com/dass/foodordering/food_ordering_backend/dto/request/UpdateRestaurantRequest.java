@@ -36,4 +36,5 @@ public class UpdateRestaurantRequest {
     private String twitterUrl;
 
     private List<String> galleryImageUrls;
+    private String openingHoursJson;
 }

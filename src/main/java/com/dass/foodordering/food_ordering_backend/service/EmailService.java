@@ -1,5 +1,6 @@
 package com.dass.foodordering.food_ordering_backend.service;
 
+import com.dass.foodordering.food_ordering_backend.dto.request.ContactFormRequest;
 import com.dass.foodordering.food_ordering_backend.model.Order;
 import com.dass.foodordering.food_ordering_backend.model.Reservation;
 import com.sendgrid.Method;
@@ -90,5 +91,26 @@ public class EmailService {
             System.err.println("Error sending email: " + ex.getMessage());
             // In a real app, you'd have more robust error logging here
         }
+    }
+
+    public void sendContactFormNotification(ContactFormRequest request) {
+        String subject = "New Lead from Tablo Landing Page: " + request.getName();
+        
+        String body = String.format(
+            "<h1>New Contact Request</h1>" +
+            "<p><strong>Name:</strong> %s</p>" +
+            "<p><strong>Email:</strong> %s</p>" +
+            "<p><strong>Restaurant:</strong> %s</p>" +
+            "<p><strong>Message:</strong></p>" +
+            "<blockquote>%s</blockquote>",
+            request.getName(),
+            request.getEmail(),
+            request.getRestaurantName(),
+            request.getMessage()
+        );
+
+        // Send this email to myself (the platform admin)
+        // reuse 'fromEmailAddress' or define a separate 'adminEmailAddress' property
+        sendEmail(fromEmailAddress, subject, body); 
     }
 }

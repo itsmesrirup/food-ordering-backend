@@ -150,6 +150,7 @@ public class RestaurantController {
         restaurantToUpdate.setFacebookUrl(restaurantDetails.getFacebookUrl());
         restaurantToUpdate.setTwitterUrl(restaurantDetails.getTwitterUrl());
         restaurantToUpdate.setGalleryImageUrls(restaurantDetails.getGalleryImageUrls());
+        restaurantToUpdate.setOpeningHoursJson(restaurantDetails.getOpeningHoursJson());
 
         Restaurant updatedRestaurant = restaurantRepository.save(restaurantToUpdate);
         return ResponseEntity.ok(new RestaurantResponse(updatedRestaurant));

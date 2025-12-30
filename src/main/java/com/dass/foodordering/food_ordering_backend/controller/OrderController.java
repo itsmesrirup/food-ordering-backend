@@ -110,6 +110,19 @@ public class OrderController {
         order.setRestaurant(restaurant);
         order.setStatus(OrderStatus.PENDING);
         order.setOrderTime(LocalDateTime.now());
+        
+        // --- ADDED: Handle Pickup Time ---
+        if (request.getPickupTime() != null) {
+            // Basic Validation: Pickup must be in the future
+            if (request.getPickupTime().isBefore(LocalDateTime.now())) {
+                throw new BadRequestException("Pickup time cannot be in the past.");
+            }
+            order.setPickupTime(request.getPickupTime());
+        } else {
+            // Default logic: standard prep time (e.g. 20 mins from now) or null to mean "ASAP"
+            // Let's keep it null to represent "ASAP"
+            order.setPickupTime(null);
+        }
 
         if (request.getTableNumber() != null && !request.getTableNumber().isEmpty()) {
             // Before checking the restaurant's own setting, check their plan first.

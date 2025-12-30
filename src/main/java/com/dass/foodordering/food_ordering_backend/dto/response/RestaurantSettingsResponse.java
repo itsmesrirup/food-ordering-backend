@@ -42,6 +42,7 @@ public class RestaurantSettingsResponse {
     private String twitterUrl;
 
     private List<String> galleryImageUrls;
+    private String openingHoursJson;
 
     public RestaurantSettingsResponse(Restaurant restaurant, Set<String> availableFeatures) {
         this.id = restaurant.getId();
@@ -70,5 +71,6 @@ public class RestaurantSettingsResponse {
         this.facebookUrl = restaurant.getFacebookUrl();
         this.twitterUrl = restaurant.getTwitterUrl();
         this.galleryImageUrls = restaurant.getGalleryImageUrls();
+        this.openingHoursJson = restaurant.getOpeningHoursJson();
     }
 }

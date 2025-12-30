@@ -50,7 +50,7 @@ public class RestaurantResponse {
     private String twitterUrl;
 
     private List<String> galleryImageUrls;
-
+    private String openingHoursJson;
     
     public RestaurantResponse(Restaurant restaurant) {
         this.id = restaurant.getId();
@@ -92,5 +92,6 @@ public class RestaurantResponse {
         this.twitterUrl = restaurant.getTwitterUrl();
 
         this.galleryImageUrls = restaurant.getGalleryImageUrls();
+        this.openingHoursJson = restaurant.getOpeningHoursJson();
     }
 }

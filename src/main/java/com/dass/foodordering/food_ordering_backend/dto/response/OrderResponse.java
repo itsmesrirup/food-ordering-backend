@@ -3,6 +3,7 @@ package com.dass.foodordering.food_ordering_backend.dto.response;
 import com.dass.foodordering.food_ordering_backend.model.Order;
 import com.dass.foodordering.food_ordering_backend.model.OrderStatus;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -15,6 +16,7 @@ public class OrderResponse {
     private List<OrderItemResponse> items; // Changed from menuItems
     private double totalPrice;
     private String tableNumber;
+    private LocalDateTime pickupTime;
 
     public OrderResponse(Order order) {
         this.id = order.getId();
@@ -26,6 +28,7 @@ public class OrderResponse {
                 .map(OrderItemResponse::new)
                 .collect(Collectors.toList());
         this.tableNumber = order.getTableNumber();
+        this.pickupTime = order.getPickupTime();
     }
 
     // Getters
@@ -37,4 +40,7 @@ public class OrderResponse {
     public List<OrderItemResponse> getItems() { return items; }
     public Double getTotalPrice() { return totalPrice; }
     public String getTableNumber() { return tableNumber; }
+    public LocalDateTime getPickupTime() {
+        return pickupTime;
+    }
 }

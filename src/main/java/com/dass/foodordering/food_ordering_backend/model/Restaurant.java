@@ -100,6 +100,12 @@ public class Restaurant {
     @Column(name = "image_url", columnDefinition = "TEXT")
     private List<String> galleryImageUrls = new ArrayList<>();
 
+    // We store it as a raw JSON string in the DB, 
+    // but we can add a helper method to parse it if needed, 
+    // or just send the string to the frontend to let JS handle it.
+    @Column(columnDefinition = "TEXT")
+    private String openingHoursJson;
+
     // The manual getters/setters for menuItems are no longer needed
     // because the @Data annotation from Lombok generates them for you.
 }

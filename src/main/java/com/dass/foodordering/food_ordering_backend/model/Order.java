@@ -92,6 +92,10 @@ public class Order {
         this.tableNumber = tableNumber;
     }
 
+    // --- ADDED: The time the customer WANTS to pick it up ---
+    @Column(name = "pickup_time")
+    private LocalDateTime pickupTime;
+
     // --- helpers to keep both sides in sync ---
     //public void addMenuItem(MenuItem item) {
       //  menuItems.add(item);
@@ -105,6 +109,14 @@ public class Order {
           //  totalPrice -= item.getPrice();
         //}
     //}
+
+    public LocalDateTime getPickupTime() {
+        return pickupTime;
+    }
+
+    public void setPickupTime(LocalDateTime pickupTime) {
+        this.pickupTime = pickupTime;
+    }
 
     // --- getters/setters ---
     public Long getId() { return id; }
