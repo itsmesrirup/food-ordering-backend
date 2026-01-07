@@ -16,13 +16,13 @@ public class FeatureService {
     // This map is the single source of truth for your subscription plans.
     private static final Map<SubscriptionPlan, Set<String>> planFeatures = Map.of(
         SubscriptionPlan.BASIC, Set.of("ORDERS", "MENU"),
-        SubscriptionPlan.PRO, Set.of("ORDERS", "MENU", "RESERVATIONS", "QR_ORDERING"),
-        SubscriptionPlan.PREMIUM, Set.of("ORDERS", "MENU", "RESERVATIONS", "QR_ORDERING", "ANALYTICS", "RECOMMENDATIONS")
+        SubscriptionPlan.PRO, Set.of("ORDERS", "MENU", "RESERVATIONS", "QR_ORDERING", "SPECIALS"),
+        SubscriptionPlan.PREMIUM, Set.of("ORDERS", "MENU", "RESERVATIONS", "QR_ORDERING", "SPECIALS", "ANALYTICS", "RECOMMENDATIONS")
     );
 
     // --- Define the feature set for the Commission model ---
     private static final Set<String> commissionFeatures = Set.of(
-        "ORDERS", "MENU", "RESERVATIONS", "QR_ORDERING" // Equivalent to PRO
+        "ORDERS", "MENU", "RESERVATIONS", "QR_ORDERING", "SPECIALS" // Equivalent to PRO
     );
 
     public Set<String> getAvailableFeaturesForRestaurant(Restaurant restaurant) {

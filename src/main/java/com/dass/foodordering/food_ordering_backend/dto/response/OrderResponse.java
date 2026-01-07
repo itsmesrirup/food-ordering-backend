@@ -17,6 +17,8 @@ public class OrderResponse {
     private double totalPrice;
     private String tableNumber;
     private LocalDateTime pickupTime;
+    private String paymentIntentId;
+    private Long orderNumber; // The customer-facing number
 
     public OrderResponse(Order order) {
         this.id = order.getId();
@@ -29,6 +31,8 @@ public class OrderResponse {
                 .collect(Collectors.toList());
         this.tableNumber = order.getTableNumber();
         this.pickupTime = order.getPickupTime();
+        this.paymentIntentId = order.getPaymentIntentId();
+        this.orderNumber = order.getRestaurantOrderSequence();
     }
 
     // Getters
@@ -42,5 +46,9 @@ public class OrderResponse {
     public String getTableNumber() { return tableNumber; }
     public LocalDateTime getPickupTime() {
         return pickupTime;
+    }
+    public String getPaymentIntentId() { return paymentIntentId; }
+    public Long getOrderNumber() {
+        return orderNumber;
     }
 }

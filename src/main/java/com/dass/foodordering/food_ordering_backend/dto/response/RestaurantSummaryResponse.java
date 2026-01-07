@@ -16,6 +16,7 @@ public class RestaurantSummaryResponse {
     private PaymentModel paymentModel;
     private BigDecimal commissionRate;
     private boolean websiteBuilderEnabled;
+    private boolean paymentsEnabled;
 
     public RestaurantSummaryResponse(Restaurant restaurant) {
         this.id = restaurant.getId();
@@ -25,5 +26,6 @@ public class RestaurantSummaryResponse {
         this.paymentModel = restaurant.getPaymentModel();
         this.commissionRate = restaurant.getCommissionRate();
         this.websiteBuilderEnabled = restaurant.isWebsiteBuilderEnabled();
+        this.paymentsEnabled = restaurant.isPaymentsEnabled();
     }
 }

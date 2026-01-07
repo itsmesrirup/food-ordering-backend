@@ -151,7 +151,7 @@ public class RestaurantController {
         restaurantToUpdate.setTwitterUrl(restaurantDetails.getTwitterUrl());
         restaurantToUpdate.setGalleryImageUrls(restaurantDetails.getGalleryImageUrls());
         restaurantToUpdate.setOpeningHoursJson(restaurantDetails.getOpeningHoursJson());
-
+        
         Restaurant updatedRestaurant = restaurantRepository.save(restaurantToUpdate);
         return ResponseEntity.ok(new RestaurantResponse(updatedRestaurant));
     }
@@ -284,5 +284,20 @@ public class RestaurantController {
         
         restaurantRepository.save(r);
         return ResponseEntity.ok().build();
+    }
+
+    // 2. NEW Endpoint (Super Admin access only)
+    @Data public static class TogglePaymentsRequest { private Boolean enabled; }
+
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    @PatchMapping("/{id}/toggle-payments")
+    public ResponseEntity<Void> togglePayments(@PathVariable Long id, @RequestBody TogglePaymentsRequest request) {
+        Restaurant restaurant = restaurantRepository.findEvenInactiveById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
+        
+        restaurant.setPaymentsEnabled(request.getEnabled());
+        restaurantRepository.save(restaurant);
+        
+        return ResponseEntity.noContent().build();
     }
 }

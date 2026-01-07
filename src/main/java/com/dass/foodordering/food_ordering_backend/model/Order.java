@@ -10,7 +10,9 @@ import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 
 @Entity
-@Table(name = "orders") // "order" is reserved in SQL
+@Table(name = "orders", 
+    // Add a unique constraint to ensure we never have duplicate numbers for the same restaurant
+    uniqueConstraints = { @UniqueConstraint(columnNames = { "restaurant_id", "restaurant_order_sequence" }) }) // "order" is reserved in SQL
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 @NamedEntityGraph(
     name = "Order.withItemsAndCustomer",
@@ -116,6 +118,28 @@ public class Order {
 
     public void setPickupTime(LocalDateTime pickupTime) {
         this.pickupTime = pickupTime;
+    }
+
+    private String paymentIntentId; // Stores "pi_12345..."
+
+    public String getPaymentIntentId() {
+        return paymentIntentId;
+    }
+
+    public void setPaymentIntentId(String paymentIntentId) {
+        this.paymentIntentId = paymentIntentId;
+    }
+
+    // --- ADDED: The customer-facing order number ---
+    @Column(name = "restaurant_order_sequence")
+    private Long restaurantOrderSequence;
+
+    public Long getRestaurantOrderSequence() {
+        return restaurantOrderSequence;
+    }
+
+    public void setRestaurantOrderSequence(Long restaurantOrderSequence) {
+        this.restaurantOrderSequence = restaurantOrderSequence;
     }
 
     // --- getters/setters ---

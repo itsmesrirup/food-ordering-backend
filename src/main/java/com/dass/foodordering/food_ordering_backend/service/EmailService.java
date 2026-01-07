@@ -27,11 +27,15 @@ public class EmailService {
     public void sendNewOrderNotification(Order order) {
         //String restaurantEmail = "email-of-the-restaurant-owner@example.com"; // We will improve this later
         String restaurantEmail = order.getRestaurant().getEmail();
-        String subject = "New Online Order Received! #" + order.getId();
+        String subject = "Nouvelle Commande / New Order #" + order.getRestaurantOrderSequence();
         String body = String.format(
-            "<h1>New Order Alert!</h1>" +
-            "<p>You have received a new order with a total of $%.2f.</p>" +
-            "<p>Please log in to your dashboard to view the details and confirm the order.</p>",
+            "<div style='font-family: Arial, sans-serif;'>" +
+                "<h1>Nouvelle Commande Reçue !</h1>" +
+                "<p>Vous avez reçu une nouvelle commande d'un montant de <strong>%.2f €</strong>.</p>" +
+                "<p>Veuillez vous connecter à votre tableau de bord pour voir les détails et confirmer la commande.</p>" +
+                "<hr>" +
+                "<p style='color: #666; font-size: 12px;'>You have received a new order. Please log in to your dashboard to view details.</p>" +
+            "</div>",
             order.getTotalPrice()
         );
         if (restaurantEmail == null || restaurantEmail.isEmpty()) {
@@ -44,14 +48,19 @@ public class EmailService {
     public void sendOrderConfirmedNotification(Order order) {
         // We get the customer's email from the order itself
         String customerEmail = order.getCustomer().getEmail();
-        String subject = "Your order from " + order.getRestaurant().getName() + " is confirmed!";
+        String subject = "Votre commande chez " + order.getRestaurant().getName() + " est confirmée !";
+        
         String body = String.format(
-            "<h1>Your Order is Confirmed!</h1>" +
-            "<p>Hello,</p>" +
-            "<p>Your order #%d has been confirmed by the restaurant and is now being prepared.</p>" +
-            "<p>Total: $%.2f</p>" +
-            "<p>Thank you for your order!</p>",
-            order.getId(),
+            "<div style='font-family: Arial, sans-serif;'>" +
+                "<h1>Commande Confirmée / Order Confirmed</h1>" +
+                "<p>Bonjour,</p>" +
+                "<p>Votre commande <strong>#%d</strong> a été confirmée par le restaurant et est en cours de préparation.</p>" +
+                "<p><strong>Total : %.2f €</strong></p>" +
+                "<p>Merci pour votre commande !</p>" +
+                "<hr>" +
+                "<p style='color: #666; font-size: 12px;'>Your order has been confirmed by the restaurant and is now being prepared.</p>" +
+            "</div>",
+            order.getRestaurantOrderSequence(), // Use Friendly Number
             order.getTotalPrice()
         );
         sendEmail(customerEmail, subject, body);
@@ -59,16 +68,21 @@ public class EmailService {
 
     public void sendReservationConfirmedNotification(Reservation reservation) {
         String customerEmail = reservation.getCustomerEmail();
-        String subject = "Your Reservation is Confirmed!";
+        String subject = "Votre réservation est confirmée !";
+        
         String body = String.format(
-            "<h1>Reservation Confirmed!</h1>" +
-            "<p>Hello %s,</p>" +
-            "<p>Your table reservation for %d people at %s on %s has been confirmed.</p>" +
-            "<p>We look forward to seeing you!</p>",
+            "<div style='font-family: Arial, sans-serif;'>" +
+                "<h1>Réservation Confirmée / Reservation Confirmed</h1>" +
+                "<p>Bonjour %s,</p>" +
+                "<p>Votre réservation pour <strong>%d personnes</strong> chez <strong>%s</strong> le <strong>%s</strong> a été confirmée.</p>" +
+                "<p>Nous avons hâte de vous accueillir !</p>" +
+                "<hr>" +
+                "<p style='color: #666; font-size: 12px;'>Your table reservation has been confirmed. We look forward to seeing you!</p>" +
+            "</div>",
             reservation.getCustomerName(),
             reservation.getPartySize(),
             reservation.getRestaurant().getName(),
-            reservation.getReservationTime().toString() // You can format this date better
+            reservation.getReservationTime().toString().replace("T", " à ") // Simple formatting for date/time
         );
         sendEmail(customerEmail, subject, body);
     }
@@ -93,6 +107,8 @@ public class EmailService {
         }
     }
 
+    // --- 5. Internal Notification (Contact Form) ---
+    // This goes to YOU, so English is fine, but let's make it standard.
     public void sendContactFormNotification(ContactFormRequest request) {
         String subject = "New Lead from Tablo Landing Page: " + request.getName();
         
@@ -109,8 +125,32 @@ public class EmailService {
             request.getMessage()
         );
 
-        // Send this email to myself (the platform admin)
-        // reuse 'fromEmailAddress' or define a separate 'adminEmailAddress' property
         sendEmail(fromEmailAddress, subject, body); 
+    }
+
+    public void sendOrderCancelledNotification(Order order) {
+        String customerEmail = order.getCustomer().getEmail();
+        String subject = "Mise à jour de votre commande chez " + order.getRestaurant().getName();
+        
+        String refundText = (order.getPaymentIntentId() != null) 
+            ? "<p><strong>Un remboursement a été initié.</strong> Les fonds apparaîtront sur votre compte sous 5 à 10 jours ouvrables.</p>"
+            : "";
+
+        String body = String.format(
+        "<div style='font-family: Arial, sans-serif;'>" +
+            "<h1>Commande Annulée / Order Cancelled</h1>" +
+            "<p>Bonjour,</p>" +
+            "<p>Nous avons le regret de vous informer que votre commande <strong>#%d</strong> a été annulée par le restaurant.</p>" +
+            "%s" + 
+            "<p>Pour toute question, veuillez contacter le restaurant au %s.</p>" +
+            "<hr>" +
+            "<p style='color: #666; font-size: 12px;'>We regret to inform you that your order has been cancelled. If paid online, a refund has been initiated.</p>" +
+        "</div>",
+        order.getRestaurantOrderSequence(),
+        refundText,
+        order.getRestaurant().getPhoneNumber() != null ? order.getRestaurant().getPhoneNumber() : "le restaurant"
+        );
+        
+        sendEmail(customerEmail, subject, body);
     }
 }

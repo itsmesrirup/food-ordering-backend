@@ -51,6 +51,9 @@ public class RestaurantResponse {
 
     private List<String> galleryImageUrls;
     private String openingHoursJson;
+
+    private boolean paymentsEnabled; // Master switch
+    private boolean stripeDetailsSubmitted; // Connection status
     
     public RestaurantResponse(Restaurant restaurant) {
         this.id = restaurant.getId();
@@ -93,5 +96,8 @@ public class RestaurantResponse {
 
         this.galleryImageUrls = restaurant.getGalleryImageUrls();
         this.openingHoursJson = restaurant.getOpeningHoursJson();
+
+        this.paymentsEnabled = restaurant.isPaymentsEnabled();
+        this.stripeDetailsSubmitted = restaurant.isStripeDetailsSubmitted();
     }
 }

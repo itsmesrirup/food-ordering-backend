@@ -21,15 +21,21 @@ import com.dass.foodordering.food_ordering_backend.repository.OrderRepository;
 import com.dass.foodordering.food_ordering_backend.service.EmailService;
 import com.dass.foodordering.food_ordering_backend.service.FeatureService;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.stripe.Stripe;
+import com.stripe.model.Refund;
+import com.stripe.param.RefundCreateParams;
+import com.stripe.exception.StripeException;
 import com.dass.foodordering.food_ordering_backend.exception.BadRequestException;
 
 import lombok.Data;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -60,6 +66,9 @@ public class OrderController {
 
     @Autowired private FeatureService featureService;
 
+    @Value("${stripe.api.key}")
+    private String apiKey;
+
     @Data
     public static class UpdateStatusRequest {
         private OrderStatus status;
@@ -80,6 +89,7 @@ public class OrderController {
     }
 
     @PostMapping
+    @Transactional // CRITICAL: Ensures the read and write happen in one transaction scope
     public OrderResponse createOrder(@RequestBody OrderRequest request) throws JsonProcessingException {
         Customer customer = customerRepository.findById(request.getCustomerId())
                 .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id: "+request.getCustomerId()));
@@ -110,7 +120,14 @@ public class OrderController {
         order.setRestaurant(restaurant);
         order.setStatus(OrderStatus.PENDING);
         order.setOrderTime(LocalDateTime.now());
+
+        // --- ADDED: Sequence Logic ---
+        // 1. Get the current max
+        Long currentMax = orderRepository.getMaxOrderSequence(restaurant.getId());
         
+        // 2. Increment
+        order.setRestaurantOrderSequence(currentMax + 1);
+
         // --- ADDED: Handle Pickup Time ---
         if (request.getPickupTime() != null) {
             // Basic Validation: Pickup must be in the future
@@ -158,6 +175,12 @@ public class OrderController {
             totalPrice += menuItem.getPrice() * itemRequest.getQuantity();
         }
         order.setTotalPrice(totalPrice);
+
+        if (request.getPaymentIntentId() != null) {
+            order.setPaymentIntentId(request.getPaymentIntentId());
+            // Optional: Set status to CONFIRMED immediately if paid?
+            // order.setStatus(OrderStatus.CONFIRMED); 
+        }
 
         Order savedOrder = orderRepository.save(order);
 
@@ -260,9 +283,29 @@ public class OrderController {
     }
     
     @PatchMapping("/{id}/status")
-    public OrderResponse updateOrderStatus(@PathVariable Long id, @RequestBody UpdateStatusRequest request) {
+    public OrderResponse updateOrderStatus(@PathVariable Long id, @RequestBody UpdateStatusRequest request) throws StripeException {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+
+        // --- ADDED: Refund Logic ---
+        if (request.getStatus() == OrderStatus.CANCELLED) {
+            // Check if it was paid online
+            if (order.getPaymentIntentId() != null) {
+                // Initialize Stripe (if not global)
+                Stripe.apiKey = apiKey;
+
+                // Create Refund
+                RefundCreateParams params = RefundCreateParams.builder()
+                        .setPaymentIntent(order.getPaymentIntentId())
+                        // Optional: .setAmount(500L) for partial, default is full
+                        .build();
+
+                Refund refund = Refund.create(params);
+                
+                // Optional: Log the refund ID in the order or ledger
+                // order.setRefundId(refund.getId());
+            }
+        }
         
         order.setStatus(request.getStatus());
         
@@ -270,6 +313,10 @@ public class OrderController {
         // If the new status is CONFIRMED, send an email to the customer.
         if (OrderStatus.CONFIRMED.equals(updatedOrder.getStatus())) {
             emailService.sendOrderConfirmedNotification(updatedOrder);
+        }
+        // --- If the new status is CANCELLED, send an email to the customer. ---
+        if (updatedOrder.getStatus() == OrderStatus.CANCELLED) {
+            emailService.sendOrderCancelledNotification(updatedOrder);
         }
         return new OrderResponse(updatedOrder);
     }

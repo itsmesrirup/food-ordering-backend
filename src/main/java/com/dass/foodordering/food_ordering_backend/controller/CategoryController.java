@@ -4,6 +4,7 @@ import com.dass.foodordering.food_ordering_backend.dto.response.CategoryResponse
 import com.dass.foodordering.food_ordering_backend.exception.BadRequestException;
 import com.dass.foodordering.food_ordering_backend.exception.ResourceNotFoundException;
 import com.dass.foodordering.food_ordering_backend.model.Category;
+import com.dass.foodordering.food_ordering_backend.model.MenuItem;
 import com.dass.foodordering.food_ordering_backend.model.Restaurant;
 import com.dass.foodordering.food_ordering_backend.model.User;
 import com.dass.foodordering.food_ordering_backend.repository.CategoryRepository;
@@ -41,6 +42,7 @@ public class CategoryController {
         Restaurant restaurant = currentUser.getRestaurant();
         
         return categoryRepository.findByRestaurantAndParentCategoryIsNull(restaurant).stream()
+            .filter(cat -> !cat.isDeleted()) // Hide deleted parents
             .map(CategoryResponse::new)
             .collect(Collectors.toList());
     }
@@ -95,12 +97,10 @@ public class CategoryController {
     public ResponseEntity<Void> deleteCategory(@PathVariable Long id) {
         Category category = findCategoryAndVerifyOwnership(id);
         
-        // Basic check: prevent deleting a category that still has items or subcategories
-        if (!category.getMenuItems().isEmpty() || !category.getSubCategories().isEmpty()) {
-            throw new BadRequestException("Cannot delete a category that contains menu items or subcategories.");
-        }
-        
-        categoryRepository.delete(category);
+        // --- CHANGED: Recursive Soft Delete ---
+        softDeleteCategory(category);
+        categoryRepository.save(category);
+
         return ResponseEntity.noContent().build();
     }
 
@@ -118,5 +118,21 @@ public class CategoryController {
             throw new ResourceNotFoundException("Category not found");
         }
         return category;
+    }
+
+    // Helper to delete category and everything inside it
+    private void softDeleteCategory(Category category) {
+        category.setDeleted(true);
+        
+        // Delete all items in this category
+        for (MenuItem item : category.getMenuItems()) {
+            item.setDeleted(true);
+            item.setAvailable(false);
+        }
+
+        // Delete all subcategories
+        for (Category subCat : category.getSubCategories()) {
+            softDeleteCategory(subCat);
+        }
     }
 }

@@ -43,6 +43,8 @@ public class RestaurantSettingsResponse {
 
     private List<String> galleryImageUrls;
     private String openingHoursJson;
+    private boolean paymentsEnabled;
+    private boolean stripeDetailsSubmitted;
 
     public RestaurantSettingsResponse(Restaurant restaurant, Set<String> availableFeatures) {
         this.id = restaurant.getId();
@@ -72,5 +74,7 @@ public class RestaurantSettingsResponse {
         this.twitterUrl = restaurant.getTwitterUrl();
         this.galleryImageUrls = restaurant.getGalleryImageUrls();
         this.openingHoursJson = restaurant.getOpeningHoursJson();
+        this.paymentsEnabled = restaurant.isPaymentsEnabled();
+        this.stripeDetailsSubmitted = restaurant.isStripeDetailsSubmitted();
     }
 }

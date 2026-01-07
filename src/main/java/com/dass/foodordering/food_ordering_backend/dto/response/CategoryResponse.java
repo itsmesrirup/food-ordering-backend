@@ -20,6 +20,7 @@ public class CategoryResponse {
         }
         if (category.getSubCategories() != null) {
             this.subCategories = category.getSubCategories().stream()
+                    .filter(sub -> !sub.isDeleted()) // --- ADDED FILTER ---
                     .map(CategoryResponse::new)
                     .collect(Collectors.toList());
         }

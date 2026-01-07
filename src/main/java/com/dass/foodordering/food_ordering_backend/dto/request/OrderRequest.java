@@ -12,4 +12,5 @@ public class OrderRequest {
     private Long customerId;
     private String tableNumber;
     private LocalDateTime pickupTime;
+    private String paymentIntentId;
 }

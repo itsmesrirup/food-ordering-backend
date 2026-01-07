@@ -37,4 +37,5 @@ public class UpdateRestaurantRequest {
 
     private List<String> galleryImageUrls;
     private String openingHoursJson;
+    private Boolean paymentsEnabled;
 }

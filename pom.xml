@@ -131,6 +131,11 @@
 			<artifactId>sentry-logback</artifactId>
 			<version>8.28.0</version>
 		</dependency>
+		<dependency>
+			<groupId>com.stripe</groupId>
+			<artifactId>stripe-java</artifactId>
+			<version>31.0.0</version>
+		</dependency>
 	</dependencies>
 
 	<build>

@@ -1,5 +1,6 @@
 package com.dass.foodordering.food_ordering_backend.controller;
 
+import com.dass.foodordering.food_ordering_backend.dto.request.UpdatePasswordRequest;
 import com.dass.foodordering.food_ordering_backend.dto.response.UserResponse;
 import com.dass.foodordering.food_ordering_backend.exception.BadRequestException;
 import com.dass.foodordering.food_ordering_backend.exception.ResourceNotFoundException;
@@ -15,11 +16,13 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -99,6 +102,29 @@ public class UserController {
         }
 
         userRepository.delete(staffMember);
+        return ResponseEntity.noContent().build();
+    }
+
+    // --- ADDED: Endpoint for Super Admin to reset ANY restaurant admin's password ---
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    @PatchMapping("/restaurant/{restaurantId}/admin/reset-password")
+    public ResponseEntity<Void> resetRestaurantAdminPassword(
+            @PathVariable Long restaurantId, 
+            @RequestBody UpdatePasswordRequest request) {
+
+        // 1. Find all users for this restaurant
+        List<User> restaurantUsers = userRepository.findByRestaurantId(restaurantId);
+        
+        // 2. Find the ADMIN user (assuming one admin per restaurant for now)
+        User adminUser = restaurantUsers.stream()
+                .filter(u -> u.getRole() == Role.ADMIN)
+                .findFirst()
+                .orElseThrow(() -> new ResourceNotFoundException("No Admin user found for this restaurant"));
+
+        // 3. Update Password
+        adminUser.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(adminUser);
+        
         return ResponseEntity.noContent().build();
     }
 

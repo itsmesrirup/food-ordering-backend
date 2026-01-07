@@ -106,6 +106,17 @@ public class Restaurant {
     @Column(columnDefinition = "TEXT")
     private String openingHoursJson;
 
+    // The ID provided by Stripe (e.g., "acct_123456789")
+    private String stripeAccountId; 
+    
+    // To quickly check if they are ready to accept payments
+    @Column(columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private boolean stripeDetailsSubmitted = false;
+
+    // Master switch controlled by Super Admin
+    @Column(columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private boolean paymentsEnabled = false; 
+
     // The manual getters/setters for menuItems are no longer needed
     // because the @Data annotation from Lombok generates them for you.
 }

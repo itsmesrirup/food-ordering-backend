@@ -50,4 +50,9 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Order> findByRestaurantIdOrderByIdDesc(Long restaurantId);
 
     List<Order> findByRestaurantIdAndStatusIn(Long restaurantId, List<OrderStatus> statuses);
+
+    // --- ADDED: Get the highest sequence number used so far ---
+    // COALESCE handles the case where it's the very first order (returns 0 instead of null)
+    @Query("SELECT COALESCE(MAX(o.restaurantOrderSequence), 0) FROM Order o WHERE o.restaurant.id = :restaurantId")
+    Long getMaxOrderSequence(@Param("restaurantId") Long restaurantId);
 }

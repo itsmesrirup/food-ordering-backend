@@ -43,4 +43,8 @@ public class Category {
     @CreationTimestamp // Automatically sets the time when saved
     @Column(updatable = false)
     private LocalDateTime createdAt;
+
+    // --- ADDED: Soft Delete Flag ---
+    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private boolean deleted = false;
 }

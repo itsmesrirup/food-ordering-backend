@@ -21,6 +21,7 @@ public class CategorizedMenuResponse {
         // Map the menu items that belong directly to this category
         if (category.getMenuItems() != null) {
             this.menuItems = category.getMenuItems().stream()
+                    .filter(item -> !item.isDeleted()) // --- ADDED FILTER ---
                     .map(MenuItemResponse::new)
                     .collect(Collectors.toList());
         }
@@ -28,6 +29,7 @@ public class CategorizedMenuResponse {
         // Recursively map the subcategories
         if (category.getSubCategories() != null) {
             this.subCategories = category.getSubCategories().stream()
+                    .filter(sub -> !sub.isDeleted()) // --- ADDED FILTER ---
                     .map(CategorizedMenuResponse::new)
                     .collect(Collectors.toList());
         }

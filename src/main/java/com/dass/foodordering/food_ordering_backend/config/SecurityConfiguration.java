@@ -41,6 +41,8 @@ public class SecurityConfiguration {
                 .requestMatchers(HttpMethod.POST, "/api/customers/find-or-create", "/api/orders", "/api/reservations").permitAll()
                 // Allow customers to view their order confirmation without logging in
                 .requestMatchers(HttpMethod.GET, "/api/orders/{id}").permitAll()
+                //Since the customer on the checkout page is (usually) not logged in, this request must be permitted for everyone.
+                .requestMatchers("/api/payments/create-intent").permitAll()
 
                 // --- USER (Customer) Endpoints ---
                 .requestMatchers("/api/customers/me/**").hasRole("USER")

@@ -78,6 +78,13 @@ public class MenuItem {
     @Column(updatable = false)
     private LocalDateTime createdAt;
 
+    // --- ADDED: Soft Delete Flag ---
+    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private boolean deleted = false;
+
+    public boolean isDeleted() { return deleted; }
+    public void setDeleted(boolean deleted) { this.deleted = deleted; }
+
     // --- getters/setters ---
 
 // --- ADDED: Getter and Setter for imageUrl ---

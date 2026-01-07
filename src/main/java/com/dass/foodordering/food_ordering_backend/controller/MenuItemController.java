@@ -59,6 +59,7 @@ public class MenuItemController {
                 Long restaurantId = currentUser.getRestaurant().getId();
 
                 return menuItemRepository.findByRestaurantId(restaurantId).stream()
+                                .filter(item -> !item.isDeleted()) // Hides deleted items
                                 .map(MenuItemResponse::new)
                                 .collect(Collectors.toList());
         }
@@ -133,7 +134,11 @@ public class MenuItemController {
         public ResponseEntity<Void> deleteMenuItem(@PathVariable Long id) {
                 MenuItem menuItem = findMenuItemAndVerifyOwnership(id);
 
-                menuItemRepository.delete(menuItem);
+                // --- CHANGED: Soft Delete Logic ---
+                menuItem.setDeleted(true); 
+                menuItem.setAvailable(false); // Make it unavailable too
+                menuItemRepository.save(menuItem);
+                
                 return ResponseEntity.noContent().build();
         }
 
