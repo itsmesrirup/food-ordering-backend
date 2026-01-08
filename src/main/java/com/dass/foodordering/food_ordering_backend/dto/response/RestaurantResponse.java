@@ -9,6 +9,7 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Data
@@ -54,6 +55,8 @@ public class RestaurantResponse {
 
     private boolean paymentsEnabled; // Master switch
     private boolean stripeDetailsSubmitted; // Connection status
+
+    private Set<String> availableFeatures;
     
     public RestaurantResponse(Restaurant restaurant) {
         this.id = restaurant.getId();
@@ -99,5 +102,9 @@ public class RestaurantResponse {
 
         this.paymentsEnabled = restaurant.isPaymentsEnabled();
         this.stripeDetailsSubmitted = restaurant.isStripeDetailsSubmitted();
+    }
+
+    public void setAvailableFeatures(Set<String> features) {
+        this.availableFeatures = features;
     }
 }

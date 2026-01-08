@@ -61,9 +61,22 @@ public class RestaurantController {
 
     @GetMapping("/{id}")
     public ResponseEntity<RestaurantResponse> getRestaurantById(@PathVariable Long id) {
-        return restaurantRepository.findByIdAndActiveTrue(id)
-                .map(restaurant -> ResponseEntity.ok(new RestaurantResponse(restaurant)))
-                .orElse(ResponseEntity.notFound().build());
+        Restaurant restaurant = restaurantRepository.findByIdAndActiveTrue(id)
+                .orElse(null); // or handle not found
+
+        if (restaurant == null) return ResponseEntity.notFound().build();
+
+        RestaurantResponse response = new RestaurantResponse(restaurant);
+
+        // --- ADDED: Calculate and set features ---
+        // Use your existing FeatureService
+        Set<String> features = featureService.getFeaturesForPlan(restaurant.getPlan());
+        // OR better, if you have commission logic:
+        // Set<String> features = featureService.getAvailableFeaturesForRestaurant(restaurant);
+        
+        response.setAvailableFeatures(features);
+
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{restaurantId}/menu")
