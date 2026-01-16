@@ -1,6 +1,9 @@
 package com.dass.foodordering.food_ordering_backend.auth;
 
 import lombok.RequiredArgsConstructor;
+
+import java.util.Map;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,5 +29,17 @@ public class AuthenticationController {
             @RequestBody AuthenticationRequest request
     ) {
         return ResponseEntity.ok(service.authenticate(request));
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<Void> forgotPassword(@RequestBody Map<String, String> request) {
+        service.forgotPassword(request.get("email"));
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<Void> resetPassword(@RequestBody Map<String, String> request) {
+        service.resetPassword(request.get("token"), request.get("password"));
+        return ResponseEntity.ok().build();
     }
 }

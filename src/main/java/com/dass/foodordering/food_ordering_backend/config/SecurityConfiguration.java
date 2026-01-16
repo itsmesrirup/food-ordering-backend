@@ -43,6 +43,7 @@ public class SecurityConfiguration {
                 .requestMatchers(HttpMethod.GET, "/api/orders/{id}").permitAll()
                 //Since the customer on the checkout page is (usually) not logged in, this request must be permitted for everyone.
                 .requestMatchers("/api/payments/create-intent").permitAll()
+                .requestMatchers("/api/auth/forgot-password", "/api/auth/reset-password").permitAll()
 
                 // --- USER (Customer) Endpoints ---
                 .requestMatchers("/api/customers/me/**").hasRole("USER")

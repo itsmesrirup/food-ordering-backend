@@ -153,4 +153,24 @@ public class EmailService {
         
         sendEmail(customerEmail, subject, body);
     }
+
+    public void sendPasswordResetEmail(String toEmail, String resetLink) {
+        String subject = "Réinitialisation de votre mot de passe - Tablo";
+        
+        String body = String.format(
+            "<div style='font-family: Arial, sans-serif;'>" +
+                "<h1>Réinitialisez votre mot de passe</h1>" +
+                "<p>Nous avons reçu une demande de réinitialisation de votre mot de passe.</p>" +
+                "<p>Cliquez sur le lien ci-dessous pour définir un nouveau mot de passe :</p>" +
+                "<p><a href='%s' style='background-color: #1976d2; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;'>Réinitialiser le mot de passe</a></p>" +
+                "<p>Ou copiez ce lien : <br> %s</p>" +
+                "<p>Ce lien expirera dans 1 heure.</p>" +
+                "<hr>" +
+                "<p style='color: #666; font-size: 12px;'>Si vous n'avez pas demandé cela, vous pouvez ignorer cet email.</p>" +
+            "</div>",
+            resetLink, resetLink
+        );
+        
+        sendEmail(toEmail, subject, body);
+    }
 }
