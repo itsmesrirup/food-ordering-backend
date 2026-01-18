@@ -79,6 +79,26 @@ public class RestaurantController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/by-slug-full/{slug}")
+    public ResponseEntity<RestaurantResponse> getRestaurantBySlugFull(@PathVariable String slug) {
+        // 1. Find by Slug
+        Restaurant restaurant = restaurantRepository.findBySlugAndActiveTrue(slug)
+                .orElse(null);
+
+        if (restaurant == null) return ResponseEntity.notFound().build();
+
+        // 2. Prepare Response (Copy logic from getRestaurantById)
+        RestaurantResponse response = new RestaurantResponse(restaurant);
+        Set<String> features = featureService.getFeaturesForPlan(restaurant.getPlan());
+        
+        // If using payment model logic:
+        // Set<String> features = featureService.getAvailableFeaturesForRestaurant(restaurant);
+        
+        response.setAvailableFeatures(features);
+
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping("/{restaurantId}/menu")
     public List<CategorizedMenuResponse> getRestaurantMenu(@PathVariable Long restaurantId) {
         Restaurant restaurant = restaurantRepository.findByIdAndActiveTrue(restaurantId)
@@ -94,6 +114,15 @@ public class RestaurantController {
     
     @PostMapping
     public RestaurantResponse createRestaurant(@RequestBody Restaurant restaurant) {
+        // --- ADDED: Auto-generate slug if missing ---
+        if (restaurant.getSlug() == null || restaurant.getSlug().isEmpty()) {
+            // Simple slug generation: lowercase, replace spaces with hyphens
+            String slug = restaurant.getName().toLowerCase().replaceAll("[^a-z0-9]", "-");
+            // Check for uniqueness? (For MVP, let's assume it's unique or add a random suffix)
+            // Ideally: while(repo.existsBySlug(slug)) { slug += random; }
+            restaurant.setSlug(slug);
+        }
+        
         return new RestaurantResponse(restaurantRepository.save(restaurant));
     }
 
