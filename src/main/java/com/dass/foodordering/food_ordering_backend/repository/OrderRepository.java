@@ -55,4 +55,48 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     // COALESCE handles the case where it's the very first order (returns 0 instead of null)
     @Query("SELECT COALESCE(MAX(o.restaurantOrderSequence), 0) FROM Order o WHERE o.restaurant.id = :restaurantId")
     Long getMaxOrderSequence(@Param("restaurantId") Long restaurantId);
+
+    // 1. Analytics Summary (Total Revenue, Count, Avg) - Filtered by Date
+    @Query("SELECT new com.dass.foodordering.food_ordering_backend.dto.response.AnalyticsSummaryResponse(" +
+        "COALESCE(SUM(o.totalPrice), 0.0), " +
+        "COALESCE(COUNT(o), 0L), " +
+        "COALESCE(AVG(o.totalPrice), 0.0)) " +
+        "FROM Order o WHERE o.restaurant.id = :restaurantId " +
+        "AND o.orderTime BETWEEN :startDate AND :endDate")
+    AnalyticsSummaryResponse getAnalyticsSummaryByDateRange(
+            @Param("restaurantId") Long restaurantId,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate
+    );
+
+    // 2. Sales by Date Range (You likely already added this)
+    @Query("SELECT new com.dass.foodordering.food_ordering_backend.dto.response.SalesByPeriodResponse(" +
+        "CAST(o.orderTime AS LocalDate), " +
+        "SUM(o.totalPrice)) " +
+        "FROM Order o WHERE o.restaurant.id = :restaurantId " +
+        "AND o.orderTime BETWEEN :startDate AND :endDate " +
+        "GROUP BY CAST(o.orderTime AS LocalDate) " +
+        "ORDER BY CAST(o.orderTime AS LocalDate) ASC")
+    List<SalesByPeriodResponse> findSalesByDateRange(
+            @Param("restaurantId") Long restaurantId, 
+            @Param("startDate") LocalDateTime startDate, 
+            @Param("endDate") LocalDateTime endDate
+    );
+
+    // 3. Orders By Hour (Native Query) - Filtered by Date
+    // Note: The logic for extracting hour might vary slightly by DB (Postgres vs MySQL), 
+    // but this matches your previous Postgres syntax.
+    @Query(value = "SELECT " +
+                   "EXTRACT(HOUR FROM o.order_time) AS hour, " +
+                   "COUNT(*) AS orderCount " +
+                   "FROM orders o WHERE o.restaurant_id = :restaurantId " +
+                   "AND o.order_time BETWEEN :startDate AND :endDate " +
+                   "GROUP BY EXTRACT(HOUR FROM o.order_time) " +
+                   "ORDER BY hour ASC",
+           nativeQuery = true)
+    List<OrdersByHourResponseProjection> findOrdersByHourAndDateRangeNative(
+            @Param("restaurantId") Long restaurantId,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate
+    );
 }

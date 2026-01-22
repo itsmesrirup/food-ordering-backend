@@ -14,14 +14,17 @@ import com.dass.foodordering.food_ordering_backend.repository.OrdersByHourRespon
 import com.dass.foodordering.food_ordering_backend.service.FeatureService;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -57,14 +60,28 @@ public class AnalyticsController {
 
 
     @GetMapping("/summary")
-    public AnalyticsSummaryResponse getSummary() {
+    public AnalyticsSummaryResponse getSummary(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end) {
+        
         Restaurant restaurant = checkAnalyticsAccessAndGetRestaurant();
+        
+        if (start != null && end != null) {
+            // New Repo method: getAnalyticsSummaryByDateRange
+            return orderRepository.getAnalyticsSummaryByDateRange(restaurant.getId(), start.atStartOfDay(), end.atTime(23,59,59));
+        }
         return orderRepository.getAnalyticsSummary(restaurant.getId());
     }
 
     @GetMapping("/top-selling-items")
-    public List<TopSellingItemResponse> getTopSellingItems() {
+    public List<TopSellingItemResponse> getTopSellingItems(
+            @RequestParam(required = false) LocalDate start,
+            @RequestParam(required = false) LocalDate end) {
+        
         Restaurant restaurant = checkAnalyticsAccessAndGetRestaurant();
+        if (start != null && end != null) {
+             return orderItemRepository.findTopSellingItemsByDateRange(restaurant.getId(), start.atStartOfDay(), end.atTime(23,59,59));
+        }
         return orderItemRepository.findTopSellingItems(restaurant.getId());
     }
 
@@ -76,13 +93,25 @@ public class AnalyticsController {
     }
 
     @GetMapping("/orders-by-hour")
-    public List<OrdersByHourResponse> getOrdersByHour() {
+    public List<OrdersByHourResponse> getOrdersByHour(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end) {
+        
         Restaurant restaurant = checkAnalyticsAccessAndGetRestaurant();
         
-        // Call the new native query method
-        List<OrdersByHourResponseProjection> results = orderRepository.findOrdersByHourNative(restaurant.getId());
+        List<OrdersByHourResponseProjection> results;
+
+        // --- ADDED: Date Range Logic ---
+        if (start != null && end != null) {
+             results = orderRepository.findOrdersByHourAndDateRangeNative(
+                 restaurant.getId(), 
+                 start.atStartOfDay(), 
+                 end.atTime(23, 59, 59)
+             );
+        } else {
+             results = orderRepository.findOrdersByHourNative(restaurant.getId());
+        }
         
-        // Manually map the projection results to our DTO
         return results.stream()
                 .map(proj -> new OrdersByHourResponse(proj.getHour(), proj.getOrderCount()))
                 .collect(Collectors.toList());
@@ -102,5 +131,20 @@ public class AnalyticsController {
         return menuItemRepository.findAllById(recommendedIds).stream()
             .map(MenuItemResponse::new)
             .collect(Collectors.toList());
+    }
+
+    @GetMapping("/sales-custom")
+    public List<SalesByPeriodResponse> getSalesByCustomRange(
+            @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        
+        Restaurant restaurant = checkAnalyticsAccessAndGetRestaurant();
+        
+        // Convert LocalDate to LocalDateTime for the query
+        return orderRepository.findSalesByDateRange(
+                restaurant.getId(), 
+                startDate.atStartOfDay(), 
+                endDate.atTime(23, 59, 59)
+        );
     }
 }
