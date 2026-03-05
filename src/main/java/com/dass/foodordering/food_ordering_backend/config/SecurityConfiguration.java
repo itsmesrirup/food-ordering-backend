@@ -57,6 +57,9 @@ public class SecurityConfiguration {
                 // Waiters & Admins need to see order status
                 .requestMatchers(HttpMethod.GET, "/api/orders/by-restaurant").hasAnyRole("WAITER", "ADMIN")
 
+                // Allow Waiters to check for occupied tables
+                .requestMatchers(HttpMethod.GET, "/api/orders/active-tables").hasAnyRole("WAITER", "ADMIN")
+
                 // --- KITCHEN Endpoints ---
                 // Waiters should arguably NOT see the full Kitchen KDS, just their orders
                 .requestMatchers("/api/orders/by-restaurant/kitchen").hasAnyRole("KITCHEN_STAFF", "ADMIN")
