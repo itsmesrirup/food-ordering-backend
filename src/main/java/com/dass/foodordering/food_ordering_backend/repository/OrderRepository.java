@@ -7,6 +7,7 @@ import com.dass.foodordering.food_ordering_backend.model.OrderStatus;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -98,5 +99,12 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             @Param("restaurantId") Long restaurantId,
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate
+    );
+
+    // Find an active order for a specific table in a specific restaurant
+    Optional<Order> findFirstByRestaurantIdAndTableNumberAndStatusIn(
+        Long restaurantId, 
+        String tableNumber, 
+        List<OrderStatus> statuses
     );
 }

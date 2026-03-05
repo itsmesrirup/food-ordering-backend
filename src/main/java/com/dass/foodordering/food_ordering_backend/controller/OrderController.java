@@ -13,6 +13,7 @@ import com.dass.foodordering.food_ordering_backend.model.OrderItem;
 import com.dass.foodordering.food_ordering_backend.model.OrderStatus;
 import com.dass.foodordering.food_ordering_backend.model.PaymentModel;
 import com.dass.foodordering.food_ordering_backend.model.Restaurant;
+import com.dass.foodordering.food_ordering_backend.model.Role;
 import com.dass.foodordering.food_ordering_backend.model.User;
 import com.dass.foodordering.food_ordering_backend.repository.CommissionLedgerRepository;
 import com.dass.foodordering.food_ordering_backend.repository.CustomerRepository;
@@ -32,6 +33,7 @@ import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -41,8 +43,10 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -65,6 +69,9 @@ public class OrderController {
     private EmailService emailService;
 
     @Autowired private FeatureService featureService;
+
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
 
     @Value("${stripe.api.key}")
     private String apiKey;
@@ -89,16 +96,21 @@ public class OrderController {
     }
 
     @PostMapping
-    @Transactional // CRITICAL: Ensures the read and write happen in one transaction scope
+    @Transactional
     public OrderResponse createOrder(@RequestBody OrderRequest request) throws JsonProcessingException {
-        Customer customer = customerRepository.findById(request.getCustomerId())
-                .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id: "+request.getCustomerId()));
+        
+        // 1. Authenticate & Identify Role
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isStaffOrder = auth != null && 
+                               auth.getPrincipal() instanceof User && 
+                               (((User)auth.getPrincipal()).getRole() == Role.ADMIN || 
+                                ((User)auth.getPrincipal()).getRole() == Role.WAITER);
 
+        // 2. Validate Items
         if (request.getItems() == null || request.getItems().isEmpty()) {
             throw new BadRequestException("Order must contain at least one item.");
         }
         
-        // Fetch all menu items in one go for efficiency
         List<Long> menuItemIds = request.getItems().stream().map(OrderItemRequest::getMenuItemId).collect(Collectors.toList());
         List<MenuItem> menuItems = menuItemRepository.findAllById(menuItemIds);
         
@@ -106,7 +118,6 @@ public class OrderController {
             throw new ResourceNotFoundException("One or more menu items not found.");
         }
 
-        // Check if all items belong to the same restaurant
         Restaurant restaurant = menuItems.get(0).getRestaurant();
         boolean allFromSameRestaurant = menuItems.stream()
                 .allMatch(item -> item.getRestaurant().getId().equals(restaurant.getId()));
@@ -115,47 +126,83 @@ public class OrderController {
             throw new BadRequestException("All menu items must belong to the same restaurant.");
         }
 
-        Order order = new Order();
-        order.setCustomer(customer);
-        order.setRestaurant(restaurant);
-        order.setStatus(OrderStatus.PENDING);
-        order.setOrderTime(LocalDateTime.now());
+        // --- CORE LOGIC START ---
+        // We declare 'order' but DO NOT initialize to null. 
+        // Java enforces that we must assign it in both branches of the if/else below.
+        Order order; 
+        boolean isNewOrder;
 
-        // --- ADDED: Sequence Logic ---
-        // 1. Get the current max
-        Long currentMax = orderRepository.getMaxOrderSequence(restaurant.getId());
+        // Step A: Check for existing order (Only for Staff + Table Number)
+        Optional<Order> existingOrderOpt = Optional.empty();
         
-        // 2. Increment
-        order.setRestaurantOrderSequence(currentMax + 1);
+        if (isStaffOrder && request.getTableNumber() != null && !request.getTableNumber().isEmpty()) {
+            List<OrderStatus> activeStatuses = Arrays.asList(OrderStatus.CONFIRMED, OrderStatus.PREPARING, OrderStatus.READY_FOR_PICKUP);
+            existingOrderOpt = orderRepository.findFirstByRestaurantIdAndTableNumberAndStatusIn(
+                restaurant.getId(), 
+                request.getTableNumber(), 
+                activeStatuses
+            );
+        }
 
-        // --- ADDED: Handle Pickup Time ---
-        if (request.getPickupTime() != null) {
-            // Basic Validation: Pickup must be in the future
-            if (request.getPickupTime().isBefore(LocalDateTime.now())) {
-                throw new BadRequestException("Pickup time cannot be in the past.");
-            }
-            order.setPickupTime(request.getPickupTime());
+        // Step B: Initialize 'order' based on result
+        if (existingOrderOpt.isPresent()) {
+            // --- APPEND PATH ---
+            order = existingOrderOpt.get();
+            isNewOrder = false;
+            // No need to set customer, pickup time, or sequence (already exist)
         } else {
-            // Default logic: standard prep time (e.g. 20 mins from now) or null to mean "ASAP"
-            // Let's keep it null to represent "ASAP"
-            order.setPickupTime(null);
-        }
-
-        if (request.getTableNumber() != null && !request.getTableNumber().isEmpty()) {
-            // Before checking the restaurant's own setting, check their plan first.
-            if (!featureService.isFeatureAvailable(restaurant, "QR_ORDERING")) {
-                throw new AccessDeniedException("QR Code Ordering is not available for this restaurant's plan.");
-            }
-
-            if (!restaurant.isQrCodeOrderingEnabled()) {
-                // The feature is disabled for this restaurant, so reject the order.
-                throw new BadRequestException("QR Code ordering is not enabled for this restaurant.");
-            }
+            // --- NEW ORDER PATH ---
+            order = new Order();
+            isNewOrder = true;
+            
+            order.setRestaurant(restaurant);
+            order.setOrderTime(LocalDateTime.now());
             order.setTableNumber(request.getTableNumber());
-        }
-        
-        // Create OrderItem objects and calculate total price
-        double totalPrice = 0;
+
+            // Customer
+            if (request.getCustomerId() != null) {
+                Customer customer = customerRepository.findById(request.getCustomerId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id: "+request.getCustomerId()));
+                order.setCustomer(customer);
+            }
+
+            // Status
+            if (isStaffOrder) {
+                order.setStatus(OrderStatus.CONFIRMED);
+            } else {
+                order.setStatus(OrderStatus.PENDING);
+            }
+
+            // Sequence
+            Long currentMax = orderRepository.getMaxOrderSequence(restaurant.getId());
+            order.setRestaurantOrderSequence(currentMax + 1);
+
+            // Pickup Time
+            if (request.getPickupTime() != null) {
+                if (request.getPickupTime().isBefore(LocalDateTime.now())) {
+                    throw new BadRequestException("Pickup time cannot be in the past.");
+                }
+                order.setPickupTime(request.getPickupTime());
+            } else {
+                order.setPickupTime(null); // ASAP
+            }
+
+            // QR Code Check
+            if (request.getTableNumber() != null && !request.getTableNumber().isEmpty()) {
+                if (!isStaffOrder) {
+                    if (!featureService.isFeatureAvailable(restaurant, "QR_ORDERING")) {
+                        throw new AccessDeniedException("QR Code Ordering is not available for this restaurant's plan.");
+                    }
+                    if (!restaurant.isQrCodeOrderingEnabled()) {
+                        throw new BadRequestException("QR Code ordering is not enabled for this restaurant.");
+                    }
+                }
+            }
+        } 
+        // --- CORE LOGIC END ---
+
+        // 3. Add Items & Calculate Total
+        double itemsTotal = 0;
         for (OrderItemRequest itemRequest : request.getItems()) {
             MenuItem menuItem = menuItems.stream()
                 .filter(mi -> mi.getId().equals(itemRequest.getMenuItemId()))
@@ -165,51 +212,75 @@ public class OrderController {
             orderItem.setMenuItem(menuItem);
             orderItem.setQuantity(itemRequest.getQuantity());
 
-            // Save the structured selected options
             if (itemRequest.getSelectedOptions() != null && !itemRequest.getSelectedOptions().isEmpty()) {
                 orderItem.setSelectedOptionsFromList(itemRequest.getSelectedOptions());
             }
 
-            order.addOrderItem(orderItem);
-
-            totalPrice += menuItem.getPrice() * itemRequest.getQuantity();
+            order.addOrderItem(orderItem); 
+            itemsTotal += menuItem.getPrice() * itemRequest.getQuantity();
         }
-        order.setTotalPrice(totalPrice);
+
+        order.setTotalPrice(order.getTotalPrice() + itemsTotal);
 
         if (request.getPaymentIntentId() != null) {
             order.setPaymentIntentId(request.getPaymentIntentId());
-            // Optional: Set status to CONFIRMED immediately if paid?
-            // order.setStatus(OrderStatus.CONFIRMED); 
         }
 
         Order savedOrder = orderRepository.save(order);
 
-        // --- ADDED: Commission Calculation Logic ---
+        // --- Commission Logic ---
         Restaurant savedRestaurant = savedOrder.getRestaurant();
         
-        // Check if the restaurant is on a commission-based plan
         if (savedRestaurant.getPaymentModel() == PaymentModel.COMMISSION && savedRestaurant.getCommissionRate() != null) {
             BigDecimal orderTotal = BigDecimal.valueOf(savedOrder.getTotalPrice());
             BigDecimal commissionRate = savedRestaurant.getCommissionRate();
-            
-            // Calculate commission: total * rate. Scale to 2 decimal places.
-            BigDecimal commissionAmount = orderTotal.multiply(commissionRate)
-                                                    .setScale(2, RoundingMode.HALF_UP);
+            BigDecimal commissionAmount = orderTotal.multiply(commissionRate).setScale(2, RoundingMode.HALF_UP);
 
-            // Create and save a ledger entry for this transaction
-            CommissionLedger ledgerEntry = new CommissionLedger();
-            ledgerEntry.setRestaurant(savedRestaurant);
-            ledgerEntry.setOrder(savedOrder);
-            ledgerEntry.setOrderTotal(orderTotal);
-            ledgerEntry.setCommissionRate(commissionRate);
-            ledgerEntry.setCommissionAmount(commissionAmount);
-            ledgerEntry.setTransactionDate(LocalDateTime.now());
-            
-            commissionLedgerRepository.save(ledgerEntry);
+            // TODO: If you add `findByOrder` to repo, you can update existing commissions here.
+            // For now, to prevent crashing on duplicate keys, ONLY create ledger for NEW orders.
+            if (isNewOrder) {
+                CommissionLedger ledgerEntry = new CommissionLedger();
+                ledgerEntry.setRestaurant(savedRestaurant);
+                ledgerEntry.setOrder(savedOrder);
+                ledgerEntry.setOrderTotal(orderTotal);
+                ledgerEntry.setCommissionRate(commissionRate);
+                ledgerEntry.setCommissionAmount(commissionAmount);
+                ledgerEntry.setTransactionDate(LocalDateTime.now());
+                commissionLedgerRepository.save(ledgerEntry);
+            }
         }
 
-        emailService.sendNewOrderNotification(savedOrder);
-        return new OrderResponse(savedOrder);
+        Order freshOrder = orderRepository.findById(savedOrder.getId()).orElse(savedOrder);
+        OrderResponse response = new OrderResponse(freshOrder);
+
+        // ✅ WEBSOCKET PUSH: Notify this specific restaurant's channel
+        // Channel format: /topic/restaurant/{id}
+        messagingTemplate.convertAndSend("/topic/restaurant/" + freshOrder.getRestaurant().getId(), response);
+
+        if (isNewOrder) {
+            emailService.sendNewOrderNotification(freshOrder);
+        }
+
+        return response;
+    }
+
+    // ✅ NEW ENDPOINT: Get Occupied Tables (For POS UI)
+    @GetMapping("/active-tables")
+    public List<String> getActiveTables() {
+        User currentUser = getCurrentUser();
+        List<OrderStatus> activeStatuses = Arrays.asList(OrderStatus.CONFIRMED, OrderStatus.PREPARING, OrderStatus.READY_FOR_PICKUP);
+        
+        List<Order> activeOrders = orderRepository.findByRestaurantIdAndStatusIn(
+            currentUser.getRestaurant().getId(), 
+            activeStatuses
+        );
+
+        // Return distinct table numbers that are not null
+        return activeOrders.stream()
+                .map(Order::getTableNumber)
+                .filter(t -> t != null && !t.isEmpty())
+                .distinct()
+                .collect(Collectors.toList());
     }
 
     /*@PutMapping("/{id}")
@@ -310,6 +381,12 @@ public class OrderController {
         order.setStatus(request.getStatus());
         
         Order updatedOrder = orderRepository.save(order);
+
+        OrderResponse response = new OrderResponse(updatedOrder);
+
+        // ✅ WEBSOCKET PUSH: Notify everyone looking at the dashboard/KDS
+        messagingTemplate.convertAndSend("/topic/restaurant/" + updatedOrder.getRestaurant().getId(), response);
+
         // If the new status is CONFIRMED, send an email to the customer.
         if (OrderStatus.CONFIRMED.equals(updatedOrder.getStatus())) {
             emailService.sendOrderConfirmedNotification(updatedOrder);
@@ -318,7 +395,7 @@ public class OrderController {
         if (updatedOrder.getStatus() == OrderStatus.CANCELLED) {
             emailService.sendOrderCancelledNotification(updatedOrder);
         }
-        return new OrderResponse(updatedOrder);
+        return response;
     }
 
     // --- PROTECTED ADMIN ENDPOINTS ---

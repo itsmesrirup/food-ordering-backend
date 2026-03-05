@@ -41,6 +41,7 @@ public class UserController {
     public static class CreateStaffRequest {
         private String email;
         private String password;
+        private Role role;
     }
 
     @GetMapping("/me")
@@ -76,11 +77,17 @@ public class UserController {
             throw new IllegalStateException("Email already in use.");
         }
 
+        // --- VALIDATION: Only allow creating KITCHEN or WAITER ---
+        // Prevents an Admin from accidentally creating another ADMIN or SUPER_ADMIN
+        if (request.getRole() != Role.KITCHEN_STAFF && request.getRole() != Role.WAITER) {
+             throw new BadRequestException("Invalid role. You can only create Kitchen Staff or Waiters.");
+        }
+
         User newStaff = User.builder()
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .restaurant(restaurant)
-                .role(Role.KITCHEN_STAFF) // Assign the KITCHEN_STAFF role
+                .role(request.getRole()) // Assign the KITCHEN_STAFF role
                 .build();
         
         return new UserResponse(userRepository.save(newStaff));

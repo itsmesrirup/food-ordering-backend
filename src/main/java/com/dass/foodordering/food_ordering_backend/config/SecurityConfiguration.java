@@ -36,12 +36,11 @@ public class SecurityConfiguration {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(auth -> auth
                 // --- PUBLIC Endpoints ---
-                .requestMatchers("/actuator/health", "/api/auth/**", "/api/customer/auth/**", "/api/public/**").permitAll()
+                .requestMatchers("/actuator/health", "/api/auth/**", "/api/customer/auth/**", "/api/public/**", "/ws/**").permitAll()
+                // IMPORTANT: POST /api/orders MUST be public for customers.
+                .requestMatchers(HttpMethod.POST, "/api/customers/find-or-create", "/api/orders", "/api/reservations").permitAll() 
                 .requestMatchers(HttpMethod.GET, "/api/restaurants/**", "/api/special-menus/restaurant/**", "/api/analytics/recommendations/**").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/customers/find-or-create", "/api/orders", "/api/reservations").permitAll()
-                // Allow customers to view their order confirmation without logging in
                 .requestMatchers(HttpMethod.GET, "/api/orders/{id}").permitAll()
-                //Since the customer on the checkout page is (usually) not logged in, this request must be permitted for everyone.
                 .requestMatchers("/api/payments/create-intent").permitAll()
                 .requestMatchers("/api/auth/forgot-password", "/api/auth/reset-password").permitAll()
                 .requestMatchers("/api/restaurants/by-slug-full/**").permitAll()
@@ -49,28 +48,40 @@ public class SecurityConfiguration {
                 // --- USER (Customer) Endpoints ---
                 .requestMatchers("/api/customers/me/**").hasRole("USER")
 
-                // --- KITCHEN_STAFF Endpoints ---
-                .requestMatchers("/api/orders/by-restaurant/kitchen").hasRole("KITCHEN_STAFF")
-                .requestMatchers(HttpMethod.PATCH, "/api/orders/{id}/status").hasRole("KITCHEN_STAFF")
+                // --- STAFF (Waiter + Admin) Endpoints ---
+                // Waiters & Admins need to fetch the menu data for the POS
+                // Note: We use hasAnyRole to be explicit, even with hierarchy
+                .requestMatchers(HttpMethod.GET, "/api/menu-items/by-restaurant").hasAnyRole("WAITER", "ADMIN") 
+                .requestMatchers(HttpMethod.GET, "/api/categories/by-restaurant").hasAnyRole("WAITER", "ADMIN")
                 
-                // --- ADMIN Endpoints ---
-                // Because of Role Hierarchy, ADMIN can also access KITCHEN_STAFF endpoints.
-                .requestMatchers("/api/analytics/**", "/api/categories/**", "/api/users/my-staff/**").hasRole("ADMIN")
-                .requestMatchers("/api/menu-items/**", "/api/menu-item-options/**", "/api/menu-item-option-choices/**").hasRole("ADMIN")
-                .requestMatchers("/api/special-menus/**").hasRole("ADMIN") // General rule for all special menu management
+                // Waiters & Admins need to see order status
+                .requestMatchers(HttpMethod.GET, "/api/orders/by-restaurant").hasAnyRole("WAITER", "ADMIN")
+
+                // --- KITCHEN Endpoints ---
+                // Waiters should arguably NOT see the full Kitchen KDS, just their orders
+                .requestMatchers("/api/orders/by-restaurant/kitchen").hasAnyRole("KITCHEN_STAFF", "ADMIN")
+                .requestMatchers(HttpMethod.PATCH, "/api/orders/{id}/status").hasAnyRole("KITCHEN_STAFF", "ADMIN")
+                
+                // --- ADMIN ONLY Endpoints ---
+                // These effectively block Waiters from editing/deleting
+                .requestMatchers("/api/analytics/**", "/api/users/my-staff/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/menu-items/**").hasRole("ADMIN") // Only Admin can CREATE menu items
+                .requestMatchers(HttpMethod.PUT, "/api/menu-items/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/menu-items/**").hasRole("ADMIN")
+                .requestMatchers("/api/categories/**").hasRole("ADMIN") // Admin manages categories
+                .requestMatchers("/api/special-menus/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/restaurants/{id}").hasRole("ADMIN")
-                .requestMatchers("/api/orders/**").hasRole("ADMIN") // General rule for any other order management
                 .requestMatchers("/api/commissions/my-restaurant").hasRole("ADMIN")
 
                 // --- SUPER_ADMIN Endpoints ---
-                // SUPER_ADMIN can access everything above, plus these.
                 .requestMatchers("/api/restaurants/all").hasRole("SUPER_ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/restaurants").hasRole("SUPER_ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/restaurants/{id}").hasRole("SUPER_ADMIN")
                 .requestMatchers(HttpMethod.PATCH, "/api/restaurants/{id}/reactivate").hasRole("SUPER_ADMIN")
                 
-                // This rule is for both ADMIN and SUPER_ADMIN because KITCHEN_STAFF doesn't have a /me endpoint
-                .requestMatchers("/api/users/me").hasAnyRole("ADMIN", "SUPER_ADMIN","KITCHEN_STAFF")
+                // --- SHARED Authenticated ---
+                // Waiters need /me to load their profile
+                .requestMatchers("/api/users/me").authenticated() 
 
                 // --- Default Deny ---
                 .anyRequest().authenticated()
@@ -85,7 +96,13 @@ public class SecurityConfiguration {
     @Bean
     public static RoleHierarchy roleHierarchy() {
         RoleHierarchyImpl hierarchy = new RoleHierarchyImpl();
-        hierarchy.setHierarchy("ROLE_SUPER_ADMIN > ROLE_ADMIN\nROLE_ADMIN > ROLE_KITCHEN_STAFF\nROLE_KITCHEN_STAFF > ROLE_USER");
+        hierarchy.setHierarchy(
+            "ROLE_SUPER_ADMIN > ROLE_ADMIN\n" +
+            "ROLE_ADMIN > ROLE_KITCHEN_STAFF\n" +
+            "ROLE_ADMIN > ROLE_WAITER\n" + // Admin manages Waiters
+            "ROLE_KITCHEN_STAFF > ROLE_USER\n" +
+            "ROLE_WAITER > ROLE_USER"
+        );
         return hierarchy;
     }
 
