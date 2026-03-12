@@ -106,6 +106,7 @@ public class RestaurantController {
 
         // Fetch only the top-level categories for this restaurant
         return categoryRepository.findByRestaurantAndParentCategoryIsNull(restaurant).stream()
+            .filter(cat -> !cat.isDeleted())    
             .map(CategorizedMenuResponse::new)
             .collect(Collectors.toList());
     }
