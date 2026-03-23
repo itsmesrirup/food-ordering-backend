@@ -45,6 +45,8 @@ public class SpecialMenuController {
         private LocalDate startDate;
         private LocalDate endDate;
         private boolean isActive;
+        private String bannerImageUrl;
+        private String themeColor;
     }
     @Data public static class SpecialMenuItemRequest {
         private String dayTitle;
@@ -87,6 +89,8 @@ public class SpecialMenuController {
         specialMenu.setStartDate(request.getStartDate());
         specialMenu.setEndDate(request.getEndDate());
         specialMenu.setActive(request.isActive());
+        specialMenu.setBannerImageUrl(request.getBannerImageUrl());
+        specialMenu.setThemeColor(request.getThemeColor());
         return specialMenuRepository.save(specialMenu);
     }
 
@@ -150,7 +154,8 @@ public class SpecialMenuController {
         specialMenu.setStartDate(request.getStartDate());
         specialMenu.setEndDate(request.getEndDate());
         specialMenu.setActive(request.isActive());
-        
+        specialMenu.setBannerImageUrl(request.getBannerImageUrl());
+        specialMenu.setThemeColor(request.getThemeColor());
         return specialMenuRepository.save(specialMenu);
     }
     

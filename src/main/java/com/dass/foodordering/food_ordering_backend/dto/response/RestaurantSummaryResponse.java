@@ -17,6 +17,8 @@ public class RestaurantSummaryResponse {
     private BigDecimal commissionRate;
     private boolean websiteBuilderEnabled;
     private boolean paymentsEnabled;
+    private String websiteTheme;
+    private String customDomain;
 
     public RestaurantSummaryResponse(Restaurant restaurant) {
         this.id = restaurant.getId();
@@ -27,5 +29,7 @@ public class RestaurantSummaryResponse {
         this.commissionRate = restaurant.getCommissionRate();
         this.websiteBuilderEnabled = restaurant.isWebsiteBuilderEnabled();
         this.paymentsEnabled = restaurant.isPaymentsEnabled();
+        this.websiteTheme = restaurant.getWebsiteTheme();
+        this.customDomain = restaurant.getCustomDomain();
     }
 }

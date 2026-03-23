@@ -1,6 +1,8 @@
 package com.dass.foodordering.food_ordering_backend.config;
 
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod; // <-- CRITICAL IMPORT
@@ -29,11 +31,15 @@ public class SecurityConfiguration {
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final AuthenticationProvider authenticationProvider;
 
+    @Autowired
+    private DynamicCorsConfigurationSource dynamicCorsSource;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            //.cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .cors(cors -> cors.configurationSource(dynamicCorsSource))
             .authorizeHttpRequests(auth -> auth
                 // --- PUBLIC Endpoints ---
                 .requestMatchers("/actuator/health", "/api/auth/**", "/api/customer/auth/**", "/api/public/**", "/ws/**").permitAll()
@@ -117,7 +123,7 @@ public class SecurityConfiguration {
     }
     
     // Make sure your CorsFilter bean is still here and configured correctly
-    @Bean
+    /*@Bean
     public CorsConfigurationSource corsConfigurationSource() {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
@@ -133,5 +139,5 @@ public class SecurityConfiguration {
         config.addAllowedMethod("*");  // Allow all methods (GET, POST, etc.)
         source.registerCorsConfiguration("/**", config);
         return source;
-    }
+    }*/
 }

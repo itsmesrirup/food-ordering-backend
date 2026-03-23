@@ -51,6 +51,8 @@ public class RestaurantController {
 
     @Data static class UpdateFeatureRequest { private Boolean websiteBuilderEnabled; }
 
+    @Data public static class UpdateThemeRequest { private String theme; }
+    
     @GetMapping
     public List<RestaurantResponse> getAllRestaurants() {
         return restaurantRepository.findByActiveTrue()
@@ -341,6 +343,43 @@ public class RestaurantController {
         restaurant.setPaymentsEnabled(request.getEnabled());
         restaurantRepository.save(restaurant);
         
+        return ResponseEntity.noContent().build();
+    }
+
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    @PatchMapping("/{id}/theme")
+    public ResponseEntity<Void> updateRestaurantTheme(@PathVariable Long id, @RequestBody UpdateThemeRequest request) {
+        Restaurant restaurant = restaurantRepository.findEvenInactiveById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
+        
+        restaurant.setWebsiteTheme(request.getTheme());
+        restaurantRepository.save(restaurant);
+        
+        return ResponseEntity.noContent().build();
+    }
+
+    @Data public static class UpdateDomainRequest { private String customDomain; }
+
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    @PatchMapping("/{id}/domain")
+    public ResponseEntity<Void> updateRestaurantDomain(@PathVariable Long id, @RequestBody UpdateDomainRequest request) {
+        Restaurant restaurant = restaurantRepository.findEvenInactiveById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
+        
+        String rawDomain = request.getCustomDomain();
+        
+        if (rawDomain == null || rawDomain.trim().isEmpty()) {
+            restaurant.setCustomDomain(null); // Allow you to clear the domain if they stop paying
+        } else {
+            // Clean the input: Remove http://, https://, and trailing slashes
+            String cleanDomain = rawDomain.replace("https://", "")
+                                          .replace("http://", "")
+                                          .replaceAll("/$", "")
+                                          .trim();
+            restaurant.setCustomDomain(cleanDomain);
+        }
+        
+        restaurantRepository.save(restaurant);
         return ResponseEntity.noContent().build();
     }
 }

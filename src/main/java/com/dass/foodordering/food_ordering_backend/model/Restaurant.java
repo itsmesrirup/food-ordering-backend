@@ -117,6 +117,12 @@ public class Restaurant {
     @Column(columnDefinition = "BOOLEAN DEFAULT FALSE")
     private boolean paymentsEnabled = false; 
 
+    @Column(name = "website_theme", length = 50, columnDefinition = "VARCHAR(50) DEFAULT 'CLASSIC'")
+    private String websiteTheme = "CLASSIC"; 
+
+    @Column(name = "custom_domain", unique = true)
+    private String customDomain; // e.g., "www.tikkanway.fr"
+
     // The manual getters/setters for menuItems are no longer needed
     // because the @Data annotation from Lombok generates them for you.
 }

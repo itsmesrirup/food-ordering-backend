@@ -36,4 +36,10 @@ public class SpecialMenu {
 
     @OneToMany(mappedBy = "specialMenu", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SpecialMenuItem> items = new ArrayList<>();
+
+    @Column(name = "banner_image_url", length = 1000)
+    private String bannerImageUrl; // URL for Diwali fireworks, St Patrick's clovers, etc.
+
+    @Column(name = "theme_color", length = 50)
+private String themeColor; // e.g., "#FF9933" for Diwali, "#009A49" for Ireland
 }

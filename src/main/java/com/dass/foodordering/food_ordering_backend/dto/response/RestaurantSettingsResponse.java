@@ -45,6 +45,7 @@ public class RestaurantSettingsResponse {
     private String openingHoursJson;
     private boolean paymentsEnabled;
     private boolean stripeDetailsSubmitted;
+    private String websiteTheme;
 
     public RestaurantSettingsResponse(Restaurant restaurant, Set<String> availableFeatures) {
         this.id = restaurant.getId();
@@ -76,5 +77,6 @@ public class RestaurantSettingsResponse {
         this.openingHoursJson = restaurant.getOpeningHoursJson();
         this.paymentsEnabled = restaurant.isPaymentsEnabled();
         this.stripeDetailsSubmitted = restaurant.isStripeDetailsSubmitted();
+        this.websiteTheme = restaurant.getWebsiteTheme();
     }
 }

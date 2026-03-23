@@ -23,4 +23,8 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
 
     // --- Method to find a public, active restaurant by its URL slug ---
     Optional<Restaurant> findBySlugAndActiveTrue(String slug);
+
+    Optional<Restaurant> findByCustomDomain(String customDomain);
+    boolean existsByCustomDomain(String customDomain);
+    Optional<Restaurant> findByCustomDomainAndActiveTrue(String domain);
 }

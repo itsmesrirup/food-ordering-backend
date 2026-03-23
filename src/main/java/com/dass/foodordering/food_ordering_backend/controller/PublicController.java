@@ -46,4 +46,15 @@ public class PublicController {
         emailService.sendContactFormNotification(request);
         return ResponseEntity.ok().build();
     }
+
+    @GetMapping("/restaurants/by-domain")
+    public ResponseEntity<RestaurantResponse> getRestaurantByDomain(@RequestParam String domain) {
+        // Clean the domain just in case (remove http://, https://, and trailing slashes)
+        String cleanDomain = domain.replace("https://", "").replace("http://", "").replaceAll("/$", "");
+        
+        Restaurant restaurant = restaurantRepository.findByCustomDomainAndActiveTrue(cleanDomain)
+                .orElseThrow(() -> new ResourceNotFoundException("Domain not recognized"));
+                
+        return ResponseEntity.ok(new RestaurantResponse(restaurant));
+    }
 }

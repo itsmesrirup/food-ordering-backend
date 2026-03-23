@@ -57,6 +57,7 @@ public class RestaurantResponse {
     private boolean stripeDetailsSubmitted; // Connection status
 
     private Set<String> availableFeatures;
+    private String websiteTheme;
     
     public RestaurantResponse(Restaurant restaurant) {
         this.id = restaurant.getId();
@@ -102,6 +103,7 @@ public class RestaurantResponse {
 
         this.paymentsEnabled = restaurant.isPaymentsEnabled();
         this.stripeDetailsSubmitted = restaurant.isStripeDetailsSubmitted();
+        this.websiteTheme = restaurant.getWebsiteTheme();
     }
 
     public void setAvailableFeatures(Set<String> features) {
