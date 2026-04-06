@@ -13,6 +13,7 @@ import com.dass.foodordering.food_ordering_backend.service.EmailService;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -93,5 +94,24 @@ public class AuthenticationService {
         user.setResetToken(null); // Clear token
         user.setResetTokenExpiry(null);
         userRepository.save(user);
+    }
+
+    // --- ADDED: Impersonation Logic for Super Admin ---
+    public AuthenticationResponse impersonate(Long restaurantId) {
+        // 1. Find all users for this restaurant
+        List<User> users = userRepository.findByRestaurantId(restaurantId);
+        
+        // 2. Find the primary ADMIN user
+        User adminToImpersonate = users.stream()
+                .filter(u -> u.getRole() == Role.ADMIN)
+                .findFirst()
+                .orElseThrow(() -> new ResourceNotFoundException("No Admin account exists for this restaurant yet."));
+
+        // 3. Generate a fresh JWT token for this admin
+        var jwtToken = jwtService.generateToken(adminToImpersonate);
+        
+        return AuthenticationResponse.builder()
+                .token(jwtToken)
+                .build();
     }
 }
