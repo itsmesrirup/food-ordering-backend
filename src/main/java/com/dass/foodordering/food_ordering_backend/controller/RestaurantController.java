@@ -374,6 +374,7 @@ public class RestaurantController {
             // Clean the input: Remove http://, https://, and trailing slashes
             String cleanDomain = rawDomain.replace("https://", "")
                                           .replace("http://", "")
+                                          .replace("www.", "")
                                           .replaceAll("/$", "")
                                           .trim();
             restaurant.setCustomDomain(cleanDomain);

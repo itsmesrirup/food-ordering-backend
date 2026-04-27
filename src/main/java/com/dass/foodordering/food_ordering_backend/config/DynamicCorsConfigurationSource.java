@@ -47,7 +47,9 @@ public class DynamicCorsConfigurationSource implements CorsConfigurationSource {
 
         // 2. Is it coming from a Custom Restaurant Domain?
         // Strip https:// or http:// to match what you save in the DB (e.g., "www.tikkanway.fr")
-        String cleanDomain = origin.replace("https://", "").replace("http://", "");
+        String cleanDomain = origin.replace("https://", "")
+                                    .replace("http://", "")
+                                    .replace("www.", "");
         
         // Query the database dynamically!
         if (restaurantRepository.existsByCustomDomain(cleanDomain)) {

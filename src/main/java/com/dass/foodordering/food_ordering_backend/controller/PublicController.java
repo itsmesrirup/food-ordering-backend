@@ -50,7 +50,10 @@ public class PublicController {
     @GetMapping("/restaurants/by-domain")
     public ResponseEntity<RestaurantResponse> getRestaurantByDomain(@RequestParam String domain) {
         // Clean the domain just in case (remove http://, https://, and trailing slashes)
-        String cleanDomain = domain.replace("https://", "").replace("http://", "").replaceAll("/$", "");
+        String cleanDomain = domain.replace("https://", "")
+                                    .replace("http://", "")
+                                    .replace("www.", "")
+                                    .replaceAll("/$", "");
         
         Restaurant restaurant = restaurantRepository.findByCustomDomainAndActiveTrue(cleanDomain)
                 .orElseThrow(() -> new ResourceNotFoundException("Domain not recognized"));
