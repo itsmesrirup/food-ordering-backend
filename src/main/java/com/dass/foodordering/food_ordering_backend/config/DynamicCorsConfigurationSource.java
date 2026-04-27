@@ -16,8 +16,10 @@ public class DynamicCorsConfigurationSource implements CorsConfigurationSource {
 
     // These are your CORE platform domains. These never change.
     private final List<String> CORE_PLATFORM_DOMAINS = Arrays.asList(
-        "https://food-ordering-admin-mvp.netlify.app",
-        "https://food-ordering-customer-mvp.netlify.app",
+        "https://admin.tabloapp.fr",  
+        "https://order.tabloapp.fr",  
+        "https://www.tabloapp.fr",    
+        "https://tabloapp.fr",            
         "http://localhost:5173", 
         "http://localhost:5174"
     );
