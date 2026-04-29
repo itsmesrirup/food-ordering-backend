@@ -142,6 +142,18 @@ public class Order {
         this.restaurantOrderSequence = restaurantOrderSequence;
     }
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "order_source")
+    private OrderSource source = OrderSource.ONLINE;
+
+    public OrderSource getSource() {
+        return source;
+    }
+
+    public void setSource(OrderSource source) {
+        this.source = source;
+    }
+
     // --- getters/setters ---
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }

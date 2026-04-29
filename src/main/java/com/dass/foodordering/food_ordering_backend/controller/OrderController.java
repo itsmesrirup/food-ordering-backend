@@ -10,6 +10,7 @@ import com.dass.foodordering.food_ordering_backend.model.Customer;
 import com.dass.foodordering.food_ordering_backend.model.MenuItem;
 import com.dass.foodordering.food_ordering_backend.model.Order;
 import com.dass.foodordering.food_ordering_backend.model.OrderItem;
+import com.dass.foodordering.food_ordering_backend.model.OrderSource;
 import com.dass.foodordering.food_ordering_backend.model.OrderStatus;
 import com.dass.foodordering.food_ordering_backend.model.PaymentModel;
 import com.dass.foodordering.food_ordering_backend.model.Restaurant;
@@ -169,8 +170,10 @@ public class OrderController {
             // Status
             if (isStaffOrder) {
                 order.setStatus(OrderStatus.CONFIRMED);
+                order.setSource(OrderSource.POS);
             } else {
                 order.setStatus(OrderStatus.PENDING);
+                order.setSource(OrderSource.ONLINE);
             }
 
             // Sequence
