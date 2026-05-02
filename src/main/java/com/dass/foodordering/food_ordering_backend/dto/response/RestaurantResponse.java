@@ -58,6 +58,12 @@ public class RestaurantResponse {
 
     private Set<String> availableFeatures;
     private String websiteTheme;
+    private String externalWebsiteUrl;
+    private String menuSectionImageUrl;
+    private String contactSectionImageUrl;
+    private String aboutSectionImageUrl;
+    private String reservationSectionImageUrl;
+    private String galleryStyle;
     
     public RestaurantResponse(Restaurant restaurant) {
         this.id = restaurant.getId();
@@ -104,6 +110,12 @@ public class RestaurantResponse {
         this.paymentsEnabled = restaurant.isPaymentsEnabled();
         this.stripeDetailsSubmitted = restaurant.isStripeDetailsSubmitted();
         this.websiteTheme = restaurant.getWebsiteTheme();
+        this.externalWebsiteUrl = restaurant.getExternalWebsiteUrl();
+        this.menuSectionImageUrl = restaurant.getMenuSectionImageUrl();
+        this.contactSectionImageUrl = restaurant.getContactSectionImageUrl();
+        this.aboutSectionImageUrl = restaurant.getAboutSectionImageUrl();
+        this.reservationSectionImageUrl = restaurant.getReservationSectionImageUrl();
+        this.galleryStyle = restaurant.getGalleryStyle();
     }
 
     public void setAvailableFeatures(Set<String> features) {

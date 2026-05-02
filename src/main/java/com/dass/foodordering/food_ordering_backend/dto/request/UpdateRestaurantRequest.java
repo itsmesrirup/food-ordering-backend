@@ -39,4 +39,10 @@ public class UpdateRestaurantRequest {
     private String openingHoursJson;
     private Boolean paymentsEnabled;
     private String websiteTheme;
+    private String externalWebsiteUrl;
+    private String menuSectionImageUrl;
+    private String contactSectionImageUrl;
+    private String aboutSectionImageUrl;
+    private String reservationSectionImageUrl;
+    private String galleryStyle;
 }

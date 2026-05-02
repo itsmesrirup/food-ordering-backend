@@ -46,6 +46,13 @@ public class RestaurantSettingsResponse {
     private boolean paymentsEnabled;
     private boolean stripeDetailsSubmitted;
     private String websiteTheme;
+    private String externalWebsiteUrl;
+    private String menuSectionImageUrl;
+    private String contactSectionImageUrl;
+    private String aboutSectionImageUrl;
+    private String reservationSectionImageUrl;
+    private String galleryStyle;
+
 
     public RestaurantSettingsResponse(Restaurant restaurant, Set<String> availableFeatures) {
         this.id = restaurant.getId();
@@ -78,5 +85,11 @@ public class RestaurantSettingsResponse {
         this.paymentsEnabled = restaurant.isPaymentsEnabled();
         this.stripeDetailsSubmitted = restaurant.isStripeDetailsSubmitted();
         this.websiteTheme = restaurant.getWebsiteTheme();
+        this.externalWebsiteUrl = restaurant.getExternalWebsiteUrl();
+        this.menuSectionImageUrl = restaurant.getMenuSectionImageUrl();
+        this.contactSectionImageUrl = restaurant.getContactSectionImageUrl();
+        this.aboutSectionImageUrl = restaurant.getAboutSectionImageUrl();
+        this.reservationSectionImageUrl = restaurant.getReservationSectionImageUrl();
+        this.galleryStyle = restaurant.getGalleryStyle();
     }
 }

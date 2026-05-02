@@ -51,7 +51,10 @@ public class RestaurantController {
 
     @Data static class UpdateFeatureRequest { private Boolean websiteBuilderEnabled; }
 
-    @Data public static class UpdateThemeRequest { private String theme; }
+    @Data public static class UpdateThemeRequest { 
+        private String theme;
+        private String galleryStyle;
+     }
     
     @GetMapping
     public List<RestaurantResponse> getAllRestaurants() {
@@ -196,6 +199,11 @@ public class RestaurantController {
         restaurantToUpdate.setTwitterUrl(restaurantDetails.getTwitterUrl());
         restaurantToUpdate.setGalleryImageUrls(restaurantDetails.getGalleryImageUrls());
         restaurantToUpdate.setOpeningHoursJson(restaurantDetails.getOpeningHoursJson());
+        restaurantToUpdate.setExternalWebsiteUrl(restaurantDetails.getExternalWebsiteUrl());
+        restaurantToUpdate.setMenuSectionImageUrl(restaurantDetails.getMenuSectionImageUrl());
+        restaurantToUpdate.setContactSectionImageUrl(restaurantDetails.getContactSectionImageUrl());
+        restaurantToUpdate.setAboutSectionImageUrl(restaurantDetails.getAboutSectionImageUrl());
+        restaurantToUpdate.setReservationSectionImageUrl(restaurantDetails.getReservationSectionImageUrl());
         
         Restaurant updatedRestaurant = restaurantRepository.save(restaurantToUpdate);
         return ResponseEntity.ok(new RestaurantResponse(updatedRestaurant));
@@ -352,9 +360,10 @@ public class RestaurantController {
         Restaurant restaurant = restaurantRepository.findEvenInactiveById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found"));
         
-        restaurant.setWebsiteTheme(request.getTheme());
-        restaurantRepository.save(restaurant);
+        if (request.getTheme() != null) restaurant.setWebsiteTheme(request.getTheme());
+        if (request.getGalleryStyle() != null) restaurant.setGalleryStyle(request.getGalleryStyle());
         
+        restaurantRepository.save(restaurant);
         return ResponseEntity.noContent().build();
     }
 

@@ -123,6 +123,24 @@ public class Restaurant {
     @Column(name = "custom_domain", unique = true)
     private String customDomain; // e.g., "www.tikkanway.fr"
 
+    @Column(name = "external_website_url", length = 500)
+    private String externalWebsiteUrl;
+
+    @Column(name = "menu_section_image_url", length = 1000)
+    private String menuSectionImageUrl;
+
+    @Column(name = "contact_section_image_url", length = 1000)
+    private String contactSectionImageUrl;
+
+    @Column(name = "about_section_image_url", length = 1000)
+    private String aboutSectionImageUrl;
+
+    @Column(name = "reservation_section_image_url", length = 1000)
+    private String reservationSectionImageUrl;
+
+    @Column(name = "gallery_style", length = 50, columnDefinition = "VARCHAR(50) DEFAULT 'GRID'")
+    private String galleryStyle = "GRID";
+
     // The manual getters/setters for menuItems are no longer needed
     // because the @Data annotation from Lombok generates them for you.
 }
