@@ -45,4 +45,6 @@ public class UpdateRestaurantRequest {
     private String aboutSectionImageUrl;
     private String reservationSectionImageUrl;
     private String galleryStyle;
+    private String announcementMessage;
+    private boolean announcementEnabled;
 }

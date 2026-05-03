@@ -141,6 +141,12 @@ public class Restaurant {
     @Column(name = "gallery_style", length = 50, columnDefinition = "VARCHAR(50) DEFAULT 'GRID'")
     private String galleryStyle = "GRID";
 
+    @Column(name = "announcement_message", length = 500)
+    private String announcementMessage;
+
+    @Column(name = "announcement_enabled", columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private boolean announcementEnabled = false;
+
     // The manual getters/setters for menuItems are no longer needed
     // because the @Data annotation from Lombok generates them for you.
 }

@@ -204,6 +204,8 @@ public class RestaurantController {
         restaurantToUpdate.setContactSectionImageUrl(restaurantDetails.getContactSectionImageUrl());
         restaurantToUpdate.setAboutSectionImageUrl(restaurantDetails.getAboutSectionImageUrl());
         restaurantToUpdate.setReservationSectionImageUrl(restaurantDetails.getReservationSectionImageUrl());
+        restaurantToUpdate.setAnnouncementMessage(restaurantDetails.getAnnouncementMessage());
+        restaurantToUpdate.setAnnouncementEnabled(restaurantDetails.isAnnouncementEnabled());
         
         Restaurant updatedRestaurant = restaurantRepository.save(restaurantToUpdate);
         return ResponseEntity.ok(new RestaurantResponse(updatedRestaurant));

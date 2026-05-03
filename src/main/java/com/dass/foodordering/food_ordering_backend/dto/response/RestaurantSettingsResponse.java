@@ -52,6 +52,8 @@ public class RestaurantSettingsResponse {
     private String aboutSectionImageUrl;
     private String reservationSectionImageUrl;
     private String galleryStyle;
+    private String announcementMessage;
+    private boolean announcementEnabled;
 
 
     public RestaurantSettingsResponse(Restaurant restaurant, Set<String> availableFeatures) {
@@ -91,5 +93,7 @@ public class RestaurantSettingsResponse {
         this.aboutSectionImageUrl = restaurant.getAboutSectionImageUrl();
         this.reservationSectionImageUrl = restaurant.getReservationSectionImageUrl();
         this.galleryStyle = restaurant.getGalleryStyle();
+        this.announcementMessage = restaurant.getAnnouncementMessage();
+        this.announcementEnabled = restaurant.isAnnouncementEnabled();
     }
 }

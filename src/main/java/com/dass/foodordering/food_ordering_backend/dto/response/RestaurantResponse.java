@@ -64,6 +64,8 @@ public class RestaurantResponse {
     private String aboutSectionImageUrl;
     private String reservationSectionImageUrl;
     private String galleryStyle;
+    private String announcementMessage;
+    private boolean announcementEnabled;
     
     public RestaurantResponse(Restaurant restaurant) {
         this.id = restaurant.getId();
@@ -116,6 +118,8 @@ public class RestaurantResponse {
         this.aboutSectionImageUrl = restaurant.getAboutSectionImageUrl();
         this.reservationSectionImageUrl = restaurant.getReservationSectionImageUrl();
         this.galleryStyle = restaurant.getGalleryStyle();
+        this.announcementMessage = restaurant.getAnnouncementMessage();
+        this.announcementEnabled = restaurant.isAnnouncementEnabled();
     }
 
     public void setAvailableFeatures(Set<String> features) {
