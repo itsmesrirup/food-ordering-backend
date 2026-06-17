@@ -66,6 +66,7 @@ public class RestaurantResponse {
     private String galleryStyle;
     private String announcementMessage;
     private boolean announcementEnabled;
+    private String businessType;
     
     public RestaurantResponse(Restaurant restaurant) {
         this.id = restaurant.getId();
@@ -120,6 +121,7 @@ public class RestaurantResponse {
         this.galleryStyle = restaurant.getGalleryStyle();
         this.announcementMessage = restaurant.getAnnouncementMessage();
         this.announcementEnabled = restaurant.isAnnouncementEnabled();
+        this.businessType = restaurant.getBusinessType() != null ? restaurant.getBusinessType().name() : "RESTAURANT";
     }
 
     public void setAvailableFeatures(Set<String> features) {

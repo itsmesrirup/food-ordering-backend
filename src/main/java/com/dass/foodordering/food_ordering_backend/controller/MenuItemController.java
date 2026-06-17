@@ -84,6 +84,8 @@ public class MenuItemController {
                 menuItem.setCategory(category); // Set the category
                 menuItem.setBundle(request.isBundle());
                 menuItem.setImageUrl(request.getImageUrl());
+                menuItem.setPriceUnit(request.getPriceUnit());
+                menuItem.setAdvanceOrderLeadTimeHours(request.getAdvanceOrderLeadTimeHours());
 
                 MenuItem saved = menuItemRepository.save(menuItem);
                 return new MenuItemResponse(saved);
@@ -104,6 +106,8 @@ public class MenuItemController {
                 menuItem.setCategory(category); // Update the category
                 menuItem.setBundle(menuItemDetails.isBundle());
                 menuItem.setImageUrl(menuItemDetails.getImageUrl());
+                menuItem.setPriceUnit(menuItemDetails.getPriceUnit());
+                menuItem.setAdvanceOrderLeadTimeHours(menuItemDetails.getAdvanceOrderLeadTimeHours());
 
                 MenuItem updatedItem = menuItemRepository.save(menuItem);
                 return ResponseEntity.ok(new MenuItemResponse(updatedItem));

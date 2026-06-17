@@ -47,4 +47,6 @@ public class UpdateRestaurantRequest {
     private String galleryStyle;
     private String announcementMessage;
     private boolean announcementEnabled;
+    private String businessType;
+    private int advanceOrderLeadTimeHours;
 }

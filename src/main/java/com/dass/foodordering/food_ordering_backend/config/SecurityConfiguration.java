@@ -44,7 +44,7 @@ public class SecurityConfiguration {
                 // --- PUBLIC Endpoints ---
                 .requestMatchers("/actuator/health", "/api/auth/**", "/api/customer/auth/**", "/api/public/**", "/ws/**").permitAll()
                 // IMPORTANT: POST /api/orders MUST be public for customers.
-                .requestMatchers(HttpMethod.POST, "/api/customers/find-or-create", "/api/orders", "/api/reservations").permitAll() 
+                .requestMatchers(HttpMethod.POST, "/api/customers/find-or-create", "/api/orders", "/api/orders/batch", "/api/reservations").permitAll() 
                 .requestMatchers(HttpMethod.GET, "/api/restaurants/**", "/api/special-menus/restaurant/**", "/api/analytics/recommendations/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/orders/{id}").permitAll()
                 .requestMatchers("/api/payments/create-intent").permitAll()

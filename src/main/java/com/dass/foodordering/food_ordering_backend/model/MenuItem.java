@@ -85,6 +85,18 @@ public class MenuItem {
     public boolean isDeleted() { return deleted; }
     public void setDeleted(boolean deleted) { this.deleted = deleted; }
 
+    @Column(name = "price_unit", length = 20)
+    private String priceUnit; // e.g., "KG", "100g", "Pièce"
+
+    public String getPriceUnit() { return priceUnit; }
+    public void setPriceUnit(String priceUnit) { this.priceUnit = priceUnit; }
+
+    @Column(name = "advance_order_lead_time_hours", columnDefinition = "integer default 0")
+    private int advanceOrderLeadTimeHours = 0;
+
+    public int getAdvanceOrderLeadTimeHours() { return advanceOrderLeadTimeHours; }
+    public void setAdvanceOrderLeadTimeHours(int advanceOrderLeadTimeHours) { this.advanceOrderLeadTimeHours = advanceOrderLeadTimeHours; }
+
     // --- getters/setters ---
 
 // --- ADDED: Getter and Setter for imageUrl ---

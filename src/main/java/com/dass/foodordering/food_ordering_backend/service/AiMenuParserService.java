@@ -30,38 +30,38 @@ public class AiMenuParserService {
         String imageUrl = "data:image/jpeg;base64," + base64Image;
 
         // --- REFINED PROMPT FOR BETTER HIERARCHY DETECTION ---
-        String prompt = "You are a menu extraction API. Your job is to turn this menu image into structured JSON data." +
+        String prompt = "You are a menu extraction API. Your job is to turn this menu image into structured JSON data.\n" +
                 
-                "HIERARCHY DETECTION:" +
-                "- **Main Category:** Look for the largest, centered, or boldest headers (e.g., 'PLATS', 'ENTRÉES', 'Biryani'). Ignore the restaurant name 'AU PUNJAB'." +
-                "- **Subcategory:** Look for smaller, underlined, or bold headers underneath a Main Category (e.g., 'Plats à base de poulet', 'Plats à base d'agneau', 'Plats végétarien')." +
+                "HIERARCHY DETECTION:\n" +
+                "- **Main Category:** Look for the largest, centered, or boldest headers (e.g., 'PLATS', 'ENTRÉES', 'La Boulangerie'). Ignore the restaurant name.\n" +
+                "- **Subcategory:** Look for smaller headers underneath a Main Category. NOTE: NOT EVERY CATEGORY HAS SUBCATEGORIES.\n" +
                 
-                "ITEM EXTRACTION RULES:" +
-                "1. Each dish name must be separated from its description." +
-                "2. **PRICE HANDLING IS CRITICAL:** Extract the price as a NUMBER only. Convert '11,50€' to 11.50. If multiple prices exist, take the first one. If no price, use 0." +
-                "3. Do NOT include the price in the item name or description." +
+                "ITEM EXTRACTION RULES:\n" +
+                "1. Each dish name must be separated from its description.\n" +
+                "2. **PRICE HANDLING IS CRITICAL:** Extract the price as a NUMBER only (e.g., 11.50). If no price, use 0.\n" +
+                "3. **UNIT DETECTION (For Bakeries/Groceries):** If the price is accompanied by a unit (e.g., '5,20€/KG', '4,40 €/100 g', '26,- € / 4 Personnes'), put ONLY the unit part (e.g., 'KG', '100g', '4 Personnes') into the 'priceUnit' field. Do not include the slash '/'. If it's a standard flat price, leave 'priceUnit' as an empty string \"\".\n" +
+                "4. **NO FAKE DATA:** If a category has items directly under it without a subcategory header, put them directly in the 'items' array and leave 'subCategories' as an empty array []. DO NOT create a subcategory with a blank name.\n" +
 
-                "JSON SCHEMA (STRICT):" +
-                "Return ONLY a JSON object. Do not wrap in markdown code blocks. Use this exact structure:" +
-                "{" +
-                "  \"categories\": [" +
-                "    {" +
-                "      \"categoryName\": \"Name of Main Category (e.g. PLATS)\"," +
-                "      \"items\": []," + // Use this list ONLY if items have no subcategory
-                "      \"subCategories\": [" +
-                "        {" +
-                "          \"name\": \"Name of Subcategory (e.g. Plats à base de poulet)\"," +
-                "          \"items\": [" +
-                "            {" +
-                "              \"name\": \"Dish Name (e.g. POULET KORMA)\"," +
-                "              \"description\": \"Dish Description (e.g. Poulet au curry...)\"," +
-                "              \"price\": 11.50" +
-                "            }" +
-                "          ]" +
-                "        }" +
-                "      ]" +
-                "    }" +
-                "  ]" +
+                "JSON SCHEMA (STRICT):\n" +
+                "Return ONLY a JSON object. Do not wrap in markdown code blocks. Follow this exact structure:\n" +
+                "{\n" +
+                "  \"categories\": [\n" +
+                "    {\n" +
+                "      \"categoryName\": \"Name of Main Category (e.g. La Boulangerie)\",\n" +
+                "      \"items\": [\n" + 
+                "        { \"name\": \"LE TOUR DE MEULE\", \"description\": \"Levain naturel...\", \"price\": 5.50, \"priceUnit\": \"KG\" },\n" +
+                "        { \"name\": \"LE PAIN DE SEIGLE\", \"description\": \"\", \"price\": 2.10, \"priceUnit\": \"\" }\n" +
+                "      ],\n" +
+                "      \"subCategories\": [\n" +
+                "        {\n" +
+                "          \"name\": \"Name of Subcategory (ONLY IF IT ACTUALLY EXISTS)\",\n" +
+                "          \"items\": [\n" +
+                "            { \"name\": \"Subcategory Dish\", \"description\": \"Description\", \"price\": 12.00, \"priceUnit\": \"\" }\n" +
+                "          ]\n" +
+                "        }\n" +
+                "      ]\n" +
+                "    }\n" +
+                "  ]\n" +
                 "}";
 
         // Build Request Body

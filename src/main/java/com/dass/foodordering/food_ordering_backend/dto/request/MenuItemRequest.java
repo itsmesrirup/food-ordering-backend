@@ -15,4 +15,6 @@ public class MenuItemRequest {
     private Long categoryId;
     private boolean bundle;
     private String imageUrl;
+    private String priceUnit;
+    private int advanceOrderLeadTimeHours;
 }

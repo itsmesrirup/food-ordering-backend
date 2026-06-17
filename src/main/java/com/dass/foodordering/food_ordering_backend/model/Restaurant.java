@@ -147,6 +147,10 @@ public class Restaurant {
     @Column(name = "announcement_enabled", columnDefinition = "BOOLEAN DEFAULT FALSE")
     private boolean announcementEnabled = false;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "business_type", length = 50, columnDefinition = "VARCHAR(50) DEFAULT 'RESTAURANT'")
+    private BusinessType businessType = BusinessType.RESTAURANT;
+
     // The manual getters/setters for menuItems are no longer needed
     // because the @Data annotation from Lombok generates them for you.
 }

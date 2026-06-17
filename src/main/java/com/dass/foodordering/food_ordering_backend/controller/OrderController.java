@@ -44,6 +44,7 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -267,6 +268,20 @@ public class OrderController {
         return response;
     }
 
+    // ✅ NEW: Batch Order Endpoint for Split Fulfillment
+    @PostMapping("/batch")
+    @Transactional // Ensures if one order fails, the whole batch rolls back
+    public List<OrderResponse> createBatchOrders(@RequestBody List<OrderRequest> requests) throws JsonProcessingException {
+        List<OrderResponse> responses = new ArrayList<>();
+        
+        // Loop through the split cart and create separate orders using the existing logic!
+        for (OrderRequest request : requests) {
+            responses.add(createOrder(request)); 
+        }
+        
+        return responses;
+    }
+
     // ✅ NEW ENDPOINT: Get Occupied Tables (For POS UI)
     @GetMapping("/active-tables")
     public List<String> getActiveTables() {
@@ -433,4 +448,5 @@ public class OrderController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         return (User) authentication.getPrincipal();
     }
+
 }

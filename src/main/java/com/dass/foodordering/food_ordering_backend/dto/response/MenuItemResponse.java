@@ -21,6 +21,8 @@ public class MenuItemResponse {
     private boolean bundle;
     private List<MenuItemOption> options;
     private String imageUrl;
+    private String priceUnit;
+    private int advanceOrderLeadTimeHours;
 
     public MenuItemResponse(MenuItem menuItem) {
         this.id = menuItem.getId();
@@ -40,6 +42,8 @@ public class MenuItemResponse {
             this.categoryName = menuItem.getCategory().getName();
         }
         this.options = menuItem.getOptions();
+        this.priceUnit = menuItem.getPriceUnit();
+        this.advanceOrderLeadTimeHours = menuItem.getAdvanceOrderLeadTimeHours();
     }
 
     // Getters
@@ -64,4 +68,10 @@ public class MenuItemResponse {
     public boolean isBundle() {
         return bundle;
     }
+
+    public String getPriceUnit() {
+        return priceUnit;
+    }
+
+    public int getAdvanceOrderLeadTimeHours() { return advanceOrderLeadTimeHours; }
 }

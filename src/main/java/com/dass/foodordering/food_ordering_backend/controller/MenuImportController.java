@@ -122,6 +122,7 @@ public class MenuImportController {
             item.setName(itemDTO.getName());
             item.setDescription(itemDTO.getDescription());
             item.setPrice(itemDTO.getPrice() != null ? itemDTO.getPrice() : 0.0);
+            item.setPriceUnit(itemDTO.getPriceUnit());
             item.setCategory(category);
             item.setRestaurant(restaurant); // Use the target restaurant
             item.setAvailable(true);

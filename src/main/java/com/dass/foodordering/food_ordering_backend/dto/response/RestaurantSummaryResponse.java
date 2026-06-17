@@ -19,6 +19,7 @@ public class RestaurantSummaryResponse {
     private boolean paymentsEnabled;
     private String websiteTheme;
     private String customDomain;
+    private String businessType;
 
     public RestaurantSummaryResponse(Restaurant restaurant) {
         this.id = restaurant.getId();
@@ -31,5 +32,6 @@ public class RestaurantSummaryResponse {
         this.paymentsEnabled = restaurant.isPaymentsEnabled();
         this.websiteTheme = restaurant.getWebsiteTheme();
         this.customDomain = restaurant.getCustomDomain();
+        this.businessType = restaurant.getBusinessType() != null ? restaurant.getBusinessType().name() : "RESTAURANT";
     }
 }

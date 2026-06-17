@@ -7,6 +7,7 @@ import com.dass.foodordering.food_ordering_backend.dto.response.RestaurantRespon
 import com.dass.foodordering.food_ordering_backend.dto.response.RestaurantSettingsResponse;
 import com.dass.foodordering.food_ordering_backend.dto.response.RestaurantSummaryResponse;
 import com.dass.foodordering.food_ordering_backend.exception.ResourceNotFoundException;
+import com.dass.foodordering.food_ordering_backend.model.BusinessType;
 import com.dass.foodordering.food_ordering_backend.model.MenuItem;
 import com.dass.foodordering.food_ordering_backend.model.PaymentModel;
 import com.dass.foodordering.food_ordering_backend.model.Restaurant;
@@ -391,6 +392,17 @@ public class RestaurantController {
             restaurant.setCustomDomain(cleanDomain);
         }
         
+        restaurantRepository.save(restaurant);
+        return ResponseEntity.noContent().build();
+    }
+
+    @Data public static class UpdateBusinessTypeRequest { private BusinessType businessType; }
+
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    @PatchMapping("/{id}/business-type")
+    public ResponseEntity<Void> updateBusinessType(@PathVariable Long id, @RequestBody UpdateBusinessTypeRequest request) {
+        Restaurant restaurant = restaurantRepository.findEvenInactiveById(id).orElseThrow();
+        restaurant.setBusinessType(request.getBusinessType());
         restaurantRepository.save(restaurant);
         return ResponseEntity.noContent().build();
     }
