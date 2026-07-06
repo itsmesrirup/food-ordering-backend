@@ -49,4 +49,5 @@ public class UpdateRestaurantRequest {
     private boolean announcementEnabled;
     private String businessType;
     private int advanceOrderLeadTimeHours;
+    private String menuPdfUrl;
 }

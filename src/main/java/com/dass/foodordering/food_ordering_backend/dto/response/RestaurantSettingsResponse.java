@@ -55,6 +55,7 @@ public class RestaurantSettingsResponse {
     private String announcementMessage;
     private boolean announcementEnabled;
     private String businessType;
+    private String menuPdfUrl;
 
 
     public RestaurantSettingsResponse(Restaurant restaurant, Set<String> availableFeatures) {
@@ -97,6 +98,6 @@ public class RestaurantSettingsResponse {
         this.announcementMessage = restaurant.getAnnouncementMessage();
         this.announcementEnabled = restaurant.isAnnouncementEnabled();
         this.businessType = restaurant.getBusinessType() != null ? restaurant.getBusinessType().name() : "RESTAURANT";
-        
+        this.menuPdfUrl = restaurant.getMenuPdfUrl();
     }
 }

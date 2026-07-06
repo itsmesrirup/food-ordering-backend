@@ -151,6 +151,9 @@ public class Restaurant {
     @Column(name = "business_type", length = 50, columnDefinition = "VARCHAR(50) DEFAULT 'RESTAURANT'")
     private BusinessType businessType = BusinessType.RESTAURANT;
 
+    @Column(name = "menu_pdf_url", length = 1000)
+    private String menuPdfUrl;
+
     // The manual getters/setters for menuItems are no longer needed
     // because the @Data annotation from Lombok generates them for you.
 }

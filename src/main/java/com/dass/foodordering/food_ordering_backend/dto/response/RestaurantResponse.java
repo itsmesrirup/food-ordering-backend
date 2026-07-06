@@ -67,6 +67,7 @@ public class RestaurantResponse {
     private String announcementMessage;
     private boolean announcementEnabled;
     private String businessType;
+    private String menuPdfUrl;
     
     public RestaurantResponse(Restaurant restaurant) {
         this.id = restaurant.getId();
@@ -122,6 +123,7 @@ public class RestaurantResponse {
         this.announcementMessage = restaurant.getAnnouncementMessage();
         this.announcementEnabled = restaurant.isAnnouncementEnabled();
         this.businessType = restaurant.getBusinessType() != null ? restaurant.getBusinessType().name() : "RESTAURANT";
+        this.menuPdfUrl = restaurant.getMenuPdfUrl();
     }
 
     public void setAvailableFeatures(Set<String> features) {
