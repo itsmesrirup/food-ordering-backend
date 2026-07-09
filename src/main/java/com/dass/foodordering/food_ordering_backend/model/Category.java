@@ -34,6 +34,7 @@ public class Category {
     private Category parentCategory;
 
     @OneToMany(mappedBy = "parentCategory", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("sortOrder ASC") // ✅ ADDED: Tells Hibernate to automatically sort subcategories!
     private List<Category> subCategories = new ArrayList<>();
     
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
@@ -47,4 +48,8 @@ public class Category {
     // --- ADDED: Soft Delete Flag ---
     @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
     private boolean deleted = false;
+
+    // ✅ ADDED: Remembers the category's position
+    @Column(name = "sort_order", columnDefinition = "integer default 0")
+    private Integer sortOrder = 0;
 }

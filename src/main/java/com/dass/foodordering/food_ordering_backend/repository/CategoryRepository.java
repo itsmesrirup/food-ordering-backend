@@ -11,7 +11,7 @@ import java.util.Optional;
 @Repository
 public interface CategoryRepository extends JpaRepository<Category, Long> {
     // Spring Data JPA automatically creates the query by method name
-    List<Category> findByRestaurantAndParentCategoryIsNull(Restaurant restaurant);
+    List<Category> findByRestaurantAndParentCategoryIsNullOrderBySortOrderAsc(Restaurant restaurant);
 
     // Find a top-level category by name for a specific restaurant
     Optional<Category> findByNameAndRestaurantAndParentCategoryIsNull(String name, Restaurant restaurant);

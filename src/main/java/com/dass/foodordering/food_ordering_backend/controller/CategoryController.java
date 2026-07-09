@@ -17,6 +17,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -41,7 +42,7 @@ public class CategoryController {
         User currentUser = (User) authentication.getPrincipal();
         Restaurant restaurant = currentUser.getRestaurant();
         
-        return categoryRepository.findByRestaurantAndParentCategoryIsNull(restaurant).stream()
+        return categoryRepository.findByRestaurantAndParentCategoryIsNullOrderBySortOrderAsc(restaurant).stream()
             .filter(cat -> !cat.isDeleted()) // Hide deleted parents
             .map(CategoryResponse::new)
             .collect(Collectors.toList());
@@ -134,5 +135,23 @@ public class CategoryController {
         for (Category subCat : category.getSubCategories()) {
             softDeleteCategory(subCat);
         }
+    }
+
+    // ✅ NEW ENDPOINT: Quickly updates the sort order of multiple categories
+    @PatchMapping("/reorder")
+    public ResponseEntity<Void> reorderCategories(@RequestBody List<Long> orderedIds) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Long userRestaurantId = ((User) authentication.getPrincipal()).getRestaurant().getId();
+
+        int currentOrder = 0;
+        for (Long id : orderedIds) {
+            Category cat = categoryRepository.findById(id).orElse(null);
+            // Security check: Only update if it belongs to their restaurant
+            if (cat != null && cat.getRestaurant().getId().equals(userRestaurantId)) {
+                cat.setSortOrder(currentOrder++);
+                categoryRepository.save(cat);
+            }
+        }
+        return ResponseEntity.ok().build();
     }
 }

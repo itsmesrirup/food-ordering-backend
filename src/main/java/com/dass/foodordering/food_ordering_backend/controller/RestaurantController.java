@@ -111,7 +111,7 @@ public class RestaurantController {
                 .orElseThrow(() -> new ResourceNotFoundException("Restaurant not found with id: " + restaurantId));
 
         // Fetch only the top-level categories for this restaurant
-        return categoryRepository.findByRestaurantAndParentCategoryIsNull(restaurant).stream()
+        return categoryRepository.findByRestaurantAndParentCategoryIsNullOrderBySortOrderAsc(restaurant).stream()
             .filter(cat -> !cat.isDeleted())    
             .map(CategorizedMenuResponse::new)
             .collect(Collectors.toList());
