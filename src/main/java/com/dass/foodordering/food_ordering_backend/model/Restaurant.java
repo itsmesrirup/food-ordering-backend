@@ -154,6 +154,9 @@ public class Restaurant {
     @Column(name = "menu_pdf_url", length = 1000)
     private String menuPdfUrl;
 
-    // The manual getters/setters for menuItems are no longer needed
+    @Column(name = "dine_in_orders_enabled", nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE")
+    private boolean dineInOrdersEnabled = true;
+
+    // The manual getters/setters are no longer needed
     // because the @Data annotation from Lombok generates them for you.
 }

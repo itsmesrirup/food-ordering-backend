@@ -7,6 +7,7 @@ import com.dass.foodordering.food_ordering_backend.dto.response.OrderResponse;
 import com.dass.foodordering.food_ordering_backend.exception.ResourceNotFoundException;
 import com.dass.foodordering.food_ordering_backend.model.CommissionLedger;
 import com.dass.foodordering.food_ordering_backend.model.Customer;
+import com.dass.foodordering.food_ordering_backend.model.DiningOption;
 import com.dass.foodordering.food_ordering_backend.model.MenuItem;
 import com.dass.foodordering.food_ordering_backend.model.Order;
 import com.dass.foodordering.food_ordering_backend.model.OrderItem;
@@ -160,6 +161,13 @@ public class OrderController {
             order.setRestaurant(restaurant);
             order.setOrderTime(LocalDateTime.now());
             order.setTableNumber(request.getTableNumber());
+
+            // ✅ ADDED: Save Dining Option
+            if (request.getDiningOption() != null && request.getDiningOption().equals("DINE_IN")) {
+                order.setDiningOption(DiningOption.DINE_IN);
+            } else {
+                order.setDiningOption(DiningOption.TAKEAWAY);
+            }
 
             // Customer
             if (request.getCustomerId() != null) {

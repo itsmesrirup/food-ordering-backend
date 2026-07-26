@@ -13,4 +13,5 @@ public class OrderRequest {
     private String tableNumber;
     private LocalDateTime pickupTime;
     private String paymentIntentId;
+    private String diningOption; // Accept from React
 }

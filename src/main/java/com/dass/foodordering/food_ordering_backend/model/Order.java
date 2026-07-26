@@ -154,7 +154,13 @@ public class Order {
         this.source = source;
     }
 
-    // --- getters/setters ---
+    @Enumerated(EnumType.STRING)
+    @Column(name = "dining_option")
+    private DiningOption diningOption = DiningOption.TAKEAWAY;
+
+    public DiningOption getDiningOption() { return diningOption; }
+    public void setDiningOption(DiningOption diningOption) { this.diningOption = diningOption; }
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 

@@ -56,6 +56,7 @@ public class RestaurantSettingsResponse {
     private boolean announcementEnabled;
     private String businessType;
     private String menuPdfUrl;
+    private boolean dineInOrdersEnabled;
 
 
     public RestaurantSettingsResponse(Restaurant restaurant, Set<String> availableFeatures) {
@@ -99,5 +100,6 @@ public class RestaurantSettingsResponse {
         this.announcementEnabled = restaurant.isAnnouncementEnabled();
         this.businessType = restaurant.getBusinessType() != null ? restaurant.getBusinessType().name() : "RESTAURANT";
         this.menuPdfUrl = restaurant.getMenuPdfUrl();
+        this.dineInOrdersEnabled = restaurant.isDineInOrdersEnabled();
     }
 }

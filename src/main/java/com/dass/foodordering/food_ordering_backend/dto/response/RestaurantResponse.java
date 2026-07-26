@@ -68,6 +68,7 @@ public class RestaurantResponse {
     private boolean announcementEnabled;
     private String businessType;
     private String menuPdfUrl;
+    private boolean dineInOrdersEnabled;
     
     public RestaurantResponse(Restaurant restaurant) {
         this.id = restaurant.getId();
@@ -124,6 +125,7 @@ public class RestaurantResponse {
         this.announcementEnabled = restaurant.isAnnouncementEnabled();
         this.businessType = restaurant.getBusinessType() != null ? restaurant.getBusinessType().name() : "RESTAURANT";
         this.menuPdfUrl = restaurant.getMenuPdfUrl();
+        this.dineInOrdersEnabled = restaurant.isDineInOrdersEnabled();
     }
 
     public void setAvailableFeatures(Set<String> features) {

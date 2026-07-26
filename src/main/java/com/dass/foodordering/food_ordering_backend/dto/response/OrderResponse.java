@@ -21,6 +21,7 @@ public class OrderResponse {
     private Long orderNumber; // The customer-facing number
     private String restaurantSlug;
     private String source;
+    private String diningOption;
 
     public OrderResponse(Order order) {
         this.id = order.getId();
@@ -39,6 +40,7 @@ public class OrderResponse {
             this.restaurantSlug = order.getRestaurant().getSlug();
         }
         this.source = order.getSource() != null ? order.getSource().name() : "ONLINE";
+        this.diningOption = order.getDiningOption() != null ? order.getDiningOption().name() : "TAKEAWAY";
     }
 
     // Getters
@@ -61,4 +63,5 @@ public class OrderResponse {
         return restaurantSlug;
     }
     public String getSource() { return source; }
+    public String getDiningOption() { return diningOption; }
 }

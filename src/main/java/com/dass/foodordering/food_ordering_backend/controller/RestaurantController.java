@@ -208,6 +208,7 @@ public class RestaurantController {
         restaurantToUpdate.setAnnouncementMessage(restaurantDetails.getAnnouncementMessage());
         restaurantToUpdate.setAnnouncementEnabled(restaurantDetails.isAnnouncementEnabled());
         restaurantToUpdate.setMenuPdfUrl(restaurantDetails.getMenuPdfUrl());
+        restaurantToUpdate.setDineInOrdersEnabled(restaurantDetails.isDineInOrdersEnabled());
         
         Restaurant updatedRestaurant = restaurantRepository.save(restaurantToUpdate);
         return ResponseEntity.ok(new RestaurantResponse(updatedRestaurant));

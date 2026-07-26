@@ -50,4 +50,5 @@ public class UpdateRestaurantRequest {
     private String businessType;
     private int advanceOrderLeadTimeHours;
     private String menuPdfUrl;
+    private boolean dineInOrdersEnabled;
 }
